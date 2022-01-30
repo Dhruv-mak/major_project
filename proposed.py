@@ -1,7 +1,10 @@
 import helper
+import proposed_helper
 import sys
 import copy
 from datetime import datetime, date
+
+from proposed_helper import get_ranks
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -14,8 +17,8 @@ class temp_map:
 
 def node_map(substrate, virtual, req_no):
     map = []
-    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x])
-    vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x])
+    sorder = get_ranks(substrate)
+    vorder = get_ranks(virtual)
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
