@@ -1,14 +1,14 @@
+import re
 import helper
 import sys
 import copy
-
+from datetime import datetime, date
 
 class temp_map:
-    def __init__(self, vne_list, map=[]) -> None:
+    def __init__(self, vne_list,req_no, map=[]) -> None:
         self.node_map = map
         self.node_cost = 0
-        for i in vne_list:
-            self.node_cost += sum(i.node_weights.values())
+        self.node_cost += sum(vne_list[req_no].node_weights.values())
         self.edge_cost = 0
         self.total_cost = sys.maxsize
         self.edge_map = dict()
@@ -50,34 +50,58 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
         for i in range(1,len(path)):
             substrate.edge_weights[(path[i - 1], path[i])] -= virtual.edge_weights[edge]
             substrate.edge_weights[(path[i], path[i-1])] -= virtual.edge_weights[edge]
-    for node in req_map.nodes:
+    for node in range(vne_list[req_no].nodes):
         substrate.node_weights[req_map.node_map[node]] -= virtual.node_weights[node]
     return True
     
 def main():
     substrate, vne_list = helper.read_pickle()
+    start_time = datetime.now().time()
     accepted = 0
-    node_sum = 0
-    edge_sum = 0
-
+    curr_map = dict()
+    pre_resource_edgecost = sum(substrate.edge_weights.values())//2
+    pre_resource_nodecost = sum(substrate.node_weights.values())
+    pre_resource = pre_resource_edgecost + pre_resource_nodecost
+    
     for req_no in range(len(vne_list)):
-        curr_map = dict()
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
             print(f"Node mapping not possible for req no {req_no}")
-            break
-        req_map = temp_map(vne_list, req_map)
+            continue
+        req_map = temp_map(vne_list, req_no, req_map)
         if not edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list):
             print(f"Edge mapping not possible for req no {req_no}")
+            continue
+        accepted += 1
+        req_map.total_cost = req_map.node_cost + req_map.edge_cost
+        print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         curr_map[req_no] = req_map
 
-    curr_map = temp_map(vne_list, map)
+    ed_cost  = 0
+    no_cost = 0
+
+    for request in curr_map.values():
+        ed_cost += request.edge_cost 
+        no_cost += request.node_cost 
+
+    tot_cost = ed_cost + no_cost
     revenue = 0
+    post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
+    
     for i in vne_list:
         revenue += sum(i.node_weights.values()) + (sum(i.edge_weights.values())//2)
-    print(f"The revenue is {revenue}")
-    curr_map.total_cost = curr_map.edge_cost + curr_map.node_cost
-    print(f"The selected map is {curr_map.node_map} with the cost of {curr_map.total_cost}")
+    
+    end_time = datetime.now().time()
+    duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
+    
+    print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
+    print(f"Total number of requests embedded is {accepted}")
+    print(f"Embedding ratio is {accepted/len(vne_list)}")
+    print(f"Availabe substrate resources before mapping is {pre_resource}")
+    print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
+    print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
+    print(f"Average node utilization {no_cost/pre_resource_nodecost}")
+    print(f"Average execution time {duration/len(vne_list)}")
 
 if __name__ == '__main__':
     main()

@@ -17,7 +17,7 @@ class Extract:
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
-        para = graph.Parameters(1000, 2000, 1000, 2000, 0, 40, 0, 40, 3, 8)  # Parameters for subsrate graph
+        para = graph.Parameters(50, 100, 50, 100, 0, 100, 0, 100, 1, 1)  # Parameters for subsrate graph
         substrate = graph.Graph(
             len(data.scenario_list[0].substrate.nodes),
             data.scenario_list[0].substrate.edges,
