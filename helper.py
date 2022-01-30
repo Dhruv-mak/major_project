@@ -1,5 +1,5 @@
 import pickle
-
+from pprint import pprint
 def read_pickle():
     filehandler = open("input.pickle", 'rb')
     mapping = pickle.load(filehandler)
