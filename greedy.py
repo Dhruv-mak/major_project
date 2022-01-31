@@ -1,8 +1,8 @@
-import re
 import helper
 import sys
 import copy
 from datetime import datetime, date
+import logging
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -56,8 +56,29 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     
 def main():
     substrate, vne_list = helper.read_pickle()
+
+    logging.basicConfig(filename="greedy.log",filemode="w", level=logging.INFO)
+    logging.info(f"\n\t\t\t\t\tSUBSTRATE NETWORK")
+    logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
+    sub_edge = []
+    for edge in substrate.edges:
+        sub_edge.append((edge,substrate.edge_weights[edge]))
+    logging.info(f"\t\tEdges of the substrate network with weight are : {sub_edge}\n\n\t\t\t\t\tVIRTUAL NETWORK")
+
+    logging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
+    for vnr in range(len(vne_list)):
+        logging.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
+        vnr_edge = []
+        for edge in vne_list[vnr].edges:
+            vnr_edge.append((edge, vne_list[vnr].edge_weights[edge]))
+        if vnr == len(vne_list)-1:
+            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {vnr_edge}\n\n")
+        else:
+            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {vnr_edge}")        
+
     start_time = datetime.now().time()
     accepted = 0
+    revenue = 0
     curr_map = dict() # only contains the requests which are successfully mapped
     pre_resource_edgecost = sum(substrate.edge_weights.values())//2 # total available bandwidth of the physical network
     pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
@@ -67,28 +88,28 @@ def main():
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
             print(f"Node mapping not possible for req no {req_no}")
+            logging.info(f"\t\tNode mapping not possible for req no {req_no}")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
         if not edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list):
             print(f"Edge mapping not possible for req no {req_no}")
+            logging.info(f"\t\tEdge mapping not possible for req no {req_no}")
             continue
         accepted += 1
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
         print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
+        logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         curr_map[req_no] = req_map
+        revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
 
     ed_cost  = 0
     no_cost = 0
-    revenue = 0
     for request in curr_map.values():
         ed_cost += request.edge_cost # total bandwidth for all the mapped requests
         no_cost += request.node_cost # total crb for all the mapped requests
-        revenue += sum(request.node_weights.values()) + (sum(request.edge_weights.values())//2)
 
     tot_cost = ed_cost + no_cost
     post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
-    
-
     
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
@@ -101,6 +122,16 @@ def main():
     print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
     print(f"Average node utilization {no_cost/pre_resource_nodecost}")
     print(f"Average execution time {duration/len(vne_list)}")
+
+    logging.info(f"\n\n")
+    logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
+    logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
+    logging.info(f"\t\tEmbedding ratio is {accepted/len(vne_list)}")
+    logging.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    logging.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
+    logging.info(f"\t\tAverage link utilization {ed_cost/pre_resource_edgecost}")
+    logging.info(f"\t\tAverage node utilization {no_cost/pre_resource_nodecost}")
+    logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)")
 
 if __name__ == '__main__':
     main()
