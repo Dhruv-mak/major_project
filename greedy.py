@@ -15,8 +15,8 @@ class temp_map:
 
 def node_map(substrate, virtual, req_no):
     map = []
-    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x])
-    vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x])
+    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x]) # ascending order
+    vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x]) 
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
@@ -36,7 +36,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             weight = virtual.edge_weights[edge]
             left_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[0])
             right_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[1])
-            path = substrate_copy.findShortestPath(str(left_node), str(right_node), weight)
+            path = substrate_copy.findShortestPath(str(left_node), str(right_node), weight) # modified bfs
             if path != []:
                 req_map.edge_map[req_no, edge] = path
                 for j in range(1, len(path)):
@@ -58,9 +58,9 @@ def main():
     substrate, vne_list = helper.read_pickle()
     start_time = datetime.now().time()
     accepted = 0
-    curr_map = dict()
-    pre_resource_edgecost = sum(substrate.edge_weights.values())//2
-    pre_resource_nodecost = sum(substrate.node_weights.values())
+    curr_map = dict() # only contains the requests which are successfully mapped
+    pre_resource_edgecost = sum(substrate.edge_weights.values())//2 # total available bandwidth of the physical network
+    pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
     pre_resource = pre_resource_edgecost + pre_resource_nodecost
     
     for req_no in range(len(vne_list)):
@@ -79,17 +79,16 @@ def main():
 
     ed_cost  = 0
     no_cost = 0
-
+    revenue = 0
     for request in curr_map.values():
-        ed_cost += request.edge_cost 
-        no_cost += request.node_cost 
+        ed_cost += request.edge_cost # total bandwidth for all the mapped requests
+        no_cost += request.node_cost # total crb for all the mapped requests
+        revenue += sum(request.node_weights.values()) + (sum(request.edge_weights.values())//2)
 
     tot_cost = ed_cost + no_cost
-    revenue = 0
     post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
     
-    for i in vne_list:
-        revenue += sum(i.node_weights.values()) + (sum(i.edge_weights.values())//2)
+
     
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    

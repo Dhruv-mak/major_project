@@ -13,7 +13,7 @@ def compute_katz(graph):
     phi = (1+math.sqrt(graph.nodes+1))/2.0 # largest eigenvalue of adj matrix
     centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize)
     # for n,c in centrality.items():
-    #     print(f"{n} {c} {centrality[n]}")
+    #     prfloat(f"{n} {c} {centrality[n]}")
     centrality = np.array([centrality[str(i)] for i in range(graph.nodes)])
     return centrality
 
@@ -39,17 +39,17 @@ def get_ranks(graph):
     cen_weight = 1/3
     str_weight = 1/3
     
-    R = np.array([((deg_weight * (deg_max - degree[i]))/(deg_max - deg_min)) +
-                    ((cen_weight * (cen_max - centrality[i]))/(cen_max - cen_min)) +
-                    ((str_weight * (str_max - strength[i]))/(str_max - str_min)) for i in range(graph.nodes)])
-    S = np.array([max( ((deg_weight * (deg_max - degree[i]))/(deg_max - deg_min)) ,
-                    ((cen_weight * (cen_max - centrality[i]))/(cen_max - cen_min)) ,
-                    ((str_weight * (str_max - strength[i]))/(str_max - str_min)) ) for i in range(graph.nodes)])
+    R = np.array([((deg_weight * (deg_max - int(degree[i])))/(deg_max - deg_min)) +
+                    ((cen_weight * (cen_max - float(centrality[i])))/(cen_max - cen_min)) +
+                    ((str_weight * (str_max - float(strength[i])))/(str_max - str_min)) for i in range(graph.nodes)])
+    S = np.array([max( ((deg_weight * (deg_max - int(degree[i])))/(deg_max - deg_min)) ,
+                    ((cen_weight * (cen_max - float(centrality[i])))/(cen_max - cen_min)) ,
+                    ((str_weight * (str_max - float(strength[i])))/(str_max - str_min)) ) for i in range(graph.nodes)])
     S_max, S_min = np.max(S), np.min(S)
     R_max, R_min = np.max(R), np.min(R)
     v = 0.5
-    Q = np.array([((v * (S[j] - S_max))/(S_max - S_min)) +
-                    (((1-v) * (R[j] - R_max))/(R_min - R_max)) for j in range(graph.nodes)])
+    Q = np.array([((v * (float(S[j]) - S_max))/(S_max - S_min)) +
+                    (((1-v) * (float(R[j]) - R_max))/(R_min - R_max)) for j in range(graph.nodes)])
 
     return sorted([i for i in range(graph.nodes)], key = lambda x: Q[x])
     
