@@ -74,7 +74,7 @@ def main():
         logging.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
         temp = []
         for node in range(vne_list[vnr].nodes):
-            temp.append((node, substrate.node_weights[node]))
+            temp.append((node, vne_list[vnr].node_weights[node]))
         logging.info(f"\t\tNodes of the VNR-{vnr+1} with weight are : {temp}")
         temp = []
         for edge in vne_list[vnr].edges:
