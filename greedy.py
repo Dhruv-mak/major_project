@@ -58,23 +58,31 @@ def main():
     substrate, vne_list = helper.read_pickle()
 
     logging.basicConfig(filename="greedy.log",filemode="w", level=logging.INFO)
-    logging.info(f"\n\t\t\t\t\tSUBSTRATE NETWORK")
+    logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
-    sub_edge = []
+    temp = []
+    for node in range(substrate.nodes):
+        temp.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    temp = []
     for edge in substrate.edges:
-        sub_edge.append((edge,substrate.edge_weights[edge]))
-    logging.info(f"\t\tEdges of the substrate network with weight are : {sub_edge}\n\n\t\t\t\t\tVIRTUAL NETWORK")
+        temp.append((edge,substrate.edge_weights[edge]))
+    logging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n\t\t\t\t\t\tVIRTUAL NETWORK")
 
     logging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
     for vnr in range(len(vne_list)):
         logging.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
-        vnr_edge = []
+        temp = []
+        for node in range(vne_list[vnr].nodes):
+            temp.append((node, substrate.node_weights[node]))
+        logging.info(f"\t\tNodes of the VNR-{vnr+1} with weight are : {temp}")
+        temp = []
         for edge in vne_list[vnr].edges:
-            vnr_edge.append((edge, vne_list[vnr].edge_weights[edge]))
+            temp.append((edge, vne_list[vnr].edge_weights[edge]))
         if vnr == len(vne_list)-1:
-            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {vnr_edge}\n\n")
+            logging.info(f"\t\tEdges of the VNR-{vnr+1} with weight are : {temp}\n\n")
         else:
-            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {vnr_edge}")        
+            logging.info(f"\t\tEdges of the VNR-{vnr+1} with weight are : {temp}")        
 
     start_time = datetime.now().time()
     accepted = 0
@@ -87,18 +95,18 @@ def main():
     for req_no in range(len(vne_list)):
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
-            print(f"Node mapping not possible for req no {req_no}")
-            logging.info(f"\t\tNode mapping not possible for req no {req_no}")
+            print(f"Node mapping not possible for req no {req_no+1}")
+            logging.info(f"\t\tNode mapping not possible for req no {req_no+1}")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
         if not edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list):
-            print(f"Edge mapping not possible for req no {req_no}")
-            logging.info(f"\t\tEdge mapping not possible for req no {req_no}")
+            print(f"Edge mapping not possible for req no {req_no+1}")
+            logging.info(f"\t\tEdge mapping not possible for req no {req_no+1}")
             continue
         accepted += 1
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
-        print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
-        logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
+        print(f"Mapping for request {req_no+1} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
+        logging.info(f"\t\tMapping for request {req_no+1} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         curr_map[req_no] = req_map
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
 
@@ -123,7 +131,17 @@ def main():
     print(f"Average node utilization {no_cost/pre_resource_nodecost}")
     print(f"Average execution time {duration/len(vne_list)}")
 
-    logging.info(f"\n\n")
+    logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
+    logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
+    temp = []
+    for node in range(substrate.nodes):
+        temp.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    temp = []
+    for edge in substrate.edges:
+        temp.append((edge,substrate.edge_weights[edge]))
+    logging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")   
+    
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
     logging.info(f"\t\tEmbedding ratio is {accepted/len(vne_list)}")
