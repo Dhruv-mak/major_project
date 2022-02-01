@@ -15,14 +15,14 @@ class temp_map:
         self.edge_map = dict()
 
 def node_map(substrate, virtual, req_no):
-    map = []
+    map = [0 for x in range(virtual.nodes)]
     sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x], reverse=True) # ascending order
     vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x], reverse=True) 
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
             if substrate.node_weights[snode] >= virtual.node_weights[vnode] and snode not in assigned_nodes:
-                map.append(snode)
+                map[vnode] = snode
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
                 assigned_nodes.add(snode)
                 break
