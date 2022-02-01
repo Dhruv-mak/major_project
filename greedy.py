@@ -15,8 +15,8 @@ class temp_map:
 
 def node_map(substrate, virtual, req_no):
     map = []
-    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x]) # ascending order
-    vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x]) 
+    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x], reverse=True) # ascending order
+    vorder = sorted([a for a in range(virtual.nodes)], key = lambda x: virtual.node_weights[x], reverse=True) 
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
@@ -34,8 +34,10 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     for edge in virtual.edges:
         if int(edge[0]) < int(edge[1]):
             weight = virtual.edge_weights[edge]
-            left_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[0])
-            right_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[1])
+            # left_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[0])
+            # right_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[1])
+            left_node = req_map.node_map[int(edge[0])]
+            right_node = req_map.node_map[int(edge[1])]
             path = substrate_copy.findShortestPath(str(left_node), str(right_node), weight) # modified bfs
             if path != []:
                 req_map.edge_map[req_no, edge] = path
@@ -45,6 +47,17 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
                     req_map.edge_cost += weight
             else:
                 return False
+    sub_wt = []
+    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x], reverse=True) # ascending order
+    for node in sorder:
+        sub_wt.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tSubstrate node before mapping VNR-{req_no+1} is {sub_wt}")
+    sub_wt = []
+    for edge in substrate.edges:
+        sub_wt.append((edge, substrate.edge_weights[edge]))
+    logging.info(f"\t\tSubstrate edge before mapping VNR-{req_no+1} is {sub_wt}")
+    logging.info(f"\t\tNode map of VNR-{req_no+1} is {req_map.node_map}")
+    logging.info(f"\t\tEdge map of VNR-{req_no+1} is {req_map.edge_map}")
     for edge, path in req_map.edge_map.items():
         edge = edge[1]
         for i in range(1,len(path)):
@@ -52,6 +65,15 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             substrate.edge_weights[(path[i], path[i-1])] -= virtual.edge_weights[edge]
     for node in range(vne_list[req_no].nodes):
         substrate.node_weights[req_map.node_map[node]] -= virtual.node_weights[node]
+    sub_wt = []
+    sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x], reverse=True) # ascending order
+    for node in sorder:
+        sub_wt.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tSubstrate after mapping VNR-{req_no+1} is {sub_wt}")
+    sub_wt = []
+    for edge in substrate.edges:
+        sub_wt.append((edge, substrate.edge_weights[edge]))
+    logging.info(f"\t\tSubstrate edge after mapping VNR-{req_no+1} is {sub_wt}")
     return True
     
 def main():
@@ -96,17 +118,17 @@ def main():
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
             print(f"Node mapping not possible for req no {req_no+1}")
-            logging.info(f"\t\tNode mapping not possible for req no {req_no+1}")
+            logging.warning(f"\tNode mapping not possible for req no {req_no+1}\n")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
         if not edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list):
             print(f"Edge mapping not possible for req no {req_no+1}")
-            logging.info(f"\t\tEdge mapping not possible for req no {req_no+1}")
+            logging.warning(f"\tEdge mapping not possible for req no {req_no+1}\n")
             continue
         accepted += 1
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
         print(f"Mapping for request {req_no+1} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
-        logging.info(f"\t\tMapping for request {req_no+1} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
+        logging.info(f"\t\tMapping for request {req_no+1} is done successfully!! {req_map.node_map} with revenue {sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2} and total cost {req_map.total_cost}\n")
         curr_map[req_no] = req_map
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
 

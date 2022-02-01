@@ -1,3 +1,6 @@
-import numpy as np
-a = np.array([1,2,3,4,5])
-print(type(a[0]))
+import logging
+logging.basicConfig(filename="logfilename.log",filemode="w", level=logging.INFO)
+name = 'Jyotirmay'
+logging.info(f"\t\thello {name}")
+logging.error(f"\t\thello {name}")
+logging.warning(f"\thello {name}")

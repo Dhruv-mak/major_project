@@ -13,7 +13,7 @@ class Extract:
             os.path.dirname(current),
             "P3_ALIB_MASTER",
             "input",
-            "senario_RedBestel.pickle",
+            "KK_Aarnet.pickle",
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
