@@ -1,20 +1,21 @@
-from re import sub
 import networkx as nx
 import math
 import numpy as np
 import sys
+import helper
+
 
 def compute_katz(graph):
     G = nx.Graph()
     G.add_nodes_from(nx.path_graph(graph.nodes))
     for edge in graph.edges:
-        G.add_edge(edge[0],edge[1], weight=graph.edge_weights[edge])
+        G.add_edge(int(edge[0]),int(edge[1]), weight=graph.edge_weights[edge])
 
-    phi = (1+math.sqrt(graph.nodes+1))/2.0 # largest eigenvalue of adj matrix
-    centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize)
-    # for n,c in centrality.items():
-    #     prfloat(f"{n} {c} {centrality[n]}")
-    centrality = np.array([centrality[str(i)] for i in range(graph.nodes)])
+    # phi = (1+math.sqrt(graph.nodes+1000))/2.0 # largest eigenvalue of adj matrix
+    # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
+    centrality = nx.katz_centrality(G)
+
+    centrality = np.array([centrality[i] for i in range(graph.nodes)])
     return centrality
 
 # subtract the edge weights in the nodes.........
@@ -29,6 +30,8 @@ def get_ranks(graph):
     # 0: degree
     # 1: cetrality
     # 2: strength
+
+    # consider node weight, calculate attribute weights
     degree = np.array([len(graph.neighbours[i]) for i in range(graph.nodes)])
     centrality = compute_katz(graph)
     strength = compute_strength(graph)
@@ -52,4 +55,15 @@ def get_ranks(graph):
                     (((1-v) * (float(R[j]) - R_max))/(R_min - R_max)) for j in range(graph.nodes)])
 
     return sorted([i for i in range(graph.nodes)], key = lambda x: Q[x])
-    
+
+
+
+if __name__ == '__main__':
+    substrate, vne_list = helper.read_pickle()
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(substrate.nodes))
+    for edge in substrate.edges:
+        G.add_edge(int(edge[0]),int(edge[1]), weight=substrate.edge_weights[edge])
+    phi = (1+math.sqrt(substrate.nodes+1))/2.0 # largest eigenvalue of adj matrix
+    print(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))
+
