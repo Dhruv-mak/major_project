@@ -3,6 +3,7 @@ import sys
 import copy
 from datetime import datetime, date
 import logging
+import random
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -114,7 +115,9 @@ def main():
     pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
     pre_resource = pre_resource_edgecost + pre_resource_nodecost
     
-    for req_no in range(len(vne_list)):
+    req_order = list(range(len(vne_list)))
+    random.shuffle(req_order)
+    for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
             print(f"Node mapping not possible for req no {req_no}")
