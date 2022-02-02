@@ -35,8 +35,6 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     for edge in virtual.edges:
         if int(edge[0]) < int(edge[1]):
             weight = virtual.edge_weights[edge]
-            # left_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[0])
-            # right_node = sum(vne_list[i].nodes for i in range(0,req_no)) + int(edge[1])
             left_node = req_map.node_map[int(edge[0])]
             right_node = req_map.node_map[int(edge[1])]
             path = substrate_copy.findShortestPath(str(left_node), str(right_node), weight) # modified bfs
@@ -168,6 +166,9 @@ def main():
     logging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")   
     
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
+    if tot_cost == 0:
+        logging.error(f"\t\tCouldn't embedd any request")
+        return
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
     logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")

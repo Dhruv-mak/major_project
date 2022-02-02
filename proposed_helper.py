@@ -1,21 +1,22 @@
-from re import sub
 import networkx as nx
 import math
 import numpy as np
 import sys
+import helper
+
 
 
 def compute_katz(graph):
     G = nx.Graph()
     G.add_nodes_from(nx.path_graph(graph.nodes))
     for edge in graph.edges:
-        G.add_edge(edge[0], edge[1], weight=graph.edge_weights[edge])
 
-    phi = (1 + math.sqrt(graph.nodes + 1000)) / 2.0  # largest eigenvalue of adj matrix
-    centrality = nx.katz_centrality(G, 1 / phi - 0.01, max_iter=sys.maxsize)
-    # for n,c in centrality.items():
-    #     prfloat(f"{n} {c} {centrality[n]}")
-    centrality = np.array([centrality[str(i)] for i in range(graph.nodes)])
+        G.add_edge(int(edge[0]),int(edge[1]), weight=graph.edge_weights[edge])
+
+    # phi = (1+math.sqrt(graph.nodes+1000))/2.0 # largest eigenvalue of adj matrix
+    # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
+    centrality = nx.katz_centrality(G)
+    centrality = np.array([centrality[i] for i in range(graph.nodes)])
     return centrality
 
 
@@ -32,6 +33,8 @@ def get_ranks(graph):
     # 0: degree
     # 1: cetrality
     # 2: strength
+
+    # consider node weight, calculate attribute weights
     degree = np.array([len(graph.neighbours[i]) for i in range(graph.nodes)])
     centrality = compute_katz(graph)
     strength = compute_strength(graph)
@@ -90,5 +93,18 @@ def get_weights(data, no_attr):
     E_j_column = 1 - (E_j.sum(axis=0) * (1 / np.log(no_attr)))
     E_j_column_sum = sum(E_j_column)
     w_j = E_j_column / E_j_column_sum
-    # print(np.sum(w_j))
     return w_j
+
+    return sorted([i for i in range(graph.nodes)], key = lambda x: Q[x])
+
+
+if __name__ == '__main__':
+    substrate, vne_list = helper.read_pickle()
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(substrate.nodes))
+    for edge in substrate.edges:
+        G.add_edge(int(edge[0]),int(edge[1]), weight=substrate.edge_weights[edge])
+    phi = (1+math.sqrt(substrate.nodes+1))/2.0 # largest eigenvalue of adj matrix
+    print(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))
+
+
