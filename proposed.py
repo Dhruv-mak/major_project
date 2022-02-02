@@ -1,8 +1,10 @@
+from proposed_helper import get_ranks
 import helper
 import sys
 import copy
 from datetime import datetime, date
 import logging
+import random
 from proposed_helper import get_ranks
 
 class temp_map:
@@ -112,11 +114,11 @@ def main():
     pre_resource_edgecost = sum(substrate.edge_weights.values())//2 # total available bandwidth of the physical network
     pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
     pre_resource = pre_resource_edgecost + pre_resource_nodecost
-    
     revenue_list = [-1 for _ in range(len(vne_list))]
     for req in range(len(vne_list)):
         revenue_list[req] = sum(vne_list[req].node_weights.values()) + sum(vne_list[req].edge_weights.values())//2
     req_order = sorted(list(range(len(vne_list))), key=lambda x:revenue_list[x])
+
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
@@ -171,6 +173,7 @@ def main():
     if tot_cost == 0:
         logging.error(f"\t\tCouldn't embedd any request")
         return
+
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
     logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
