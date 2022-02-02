@@ -26,7 +26,7 @@ def node_map(substrate, virtual, req_no):
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
                 assigned_nodes.add(snode)
                 break
-            if snode == substrate.nodes - 1:
+            if snode == sorder[-1]:
                 return None
     return map
 
