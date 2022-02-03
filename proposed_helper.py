@@ -16,6 +16,7 @@ def compute_katz(graph):
     # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
     centrality = nx.katz_centrality(G)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
+    print(centrality)
     return centrality
 
 
@@ -32,11 +33,12 @@ def get_ranks(graph):
     # 0: degree
     # 1: cetrality
     # 2: strength
+    # 3: crb
     degree = np.array([len(graph.neighbours[i]) for i in range(graph.nodes)])
     centrality = compute_katz(graph)
     strength = compute_strength(graph)
-    attr_no = 4
     crb = np.array([graph.node_weights[i] for i in range(graph.nodes)])
+    attr_no = 4
     data = np.column_stack((degree, centrality, strength, crb))
     # frame = pd.DataFrame(data, columns=["Degree", "Centrality", "Strength", "CRB"])
     # frame.to_excel('shanon.xlsx')
@@ -50,7 +52,7 @@ def get_ranks(graph):
             (rank_mat[graph.nodes, i] - rank_mat[: graph.nodes, i])
             / (rank_mat[graph.nodes, i] - rank_mat[graph.nodes + 1, i])
         )
-    v = 0.5
+    v = 0.5 # alpha = 0.5 and (1- alpha) = 0.5
     rank_mat[: graph.nodes, (2 * attr_no)] = np.sum(
         rank_mat[: graph.nodes, attr_no : 2 * attr_no], axis=1
     )
@@ -78,11 +80,13 @@ def get_ranks(graph):
     ) / (
         rank_mat[graph.nodes, 2 * attr_no + 1] - rank_mat[graph.nodes + 1, 2 * attr_no + 1]
     )
-    return sorted(
+    ranks = sorted(
         [i for i in range(graph.nodes)], key=lambda x: rank_mat[x, 2 * attr_no + 2]
     )
+    print(ranks)
+    return ranks
 
-
+# weight calculation using shanon entropy method
 def get_weights(data, no_attr):
     column_sums = data.sum(axis=0)
     normalized = data / column_sums[:, np.newaxis].transpose()

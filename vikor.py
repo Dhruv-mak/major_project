@@ -79,7 +79,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 def main():
     substrate, vne_list = helper.read_pickle()
 
-    logging.basicConfig(filename="proposed.log",filemode="w", level=logging.INFO)
+    logging.basicConfig(filename="vikor.log",filemode="w", level=logging.INFO)
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
     temp = []
