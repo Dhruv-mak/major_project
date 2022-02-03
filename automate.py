@@ -34,11 +34,16 @@ output_dict = {
         "avg_exec": [],
     }
 
-
-for req_no in range(5, 20, 5):
+rev_cnt=0
+rct_cnt=0
+acc_cnt=0
+exec_cnt=0
+tot=0
+for req_no in range(5, 11, 5):
+    tot += 1
     for_automate(req_no)
-    setup_logger('log1',r'D:\\MajorProject\\major_project\\vikor.log')
-    setup_logger('log2',r'D:\\MajorProject\\major_project\\greedy.log')
+    setup_logger('log1','vikor.log')
+    setup_logger('log2','greedy.log')
     gred_out = greedy()
     vikor_out = vikor()
     
@@ -56,8 +61,8 @@ for req_no in range(5, 20, 5):
     output_dict["consumed"].append(gred_out['pre_resource']-gred_out['post_resource'])
     output_dict["avg_link"].append(gred_out['avg_link'])
     output_dict["avg_node"].append(gred_out['avg_node'])
-    output_dict["avg_exec"].append(gred_out['avg_exec']/gred_out['total_request'])
-
+    output_dict["avg_exec"].append(gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'])
+    
     # for key, value in vikor_out.items():
     #     output_dict[key].append(value)
     output_dict["algorithm"].append('VIKOR')
@@ -72,8 +77,20 @@ for req_no in range(5, 20, 5):
     output_dict["consumed"].append(vikor_out['pre_resource']-vikor_out['post_resource'])
     output_dict["avg_link"].append(vikor_out['avg_link'])
     output_dict["avg_node"].append(vikor_out['avg_node'])
-    output_dict["avg_exec"].append(vikor_out['avg_exec']/vikor_out['total_request'])
+    output_dict["avg_exec"].append(vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'])
 
+    if vikor_out['revenue']>gred_out['revenue']:
+        rev_cnt += 1
+    
+    if (vikor_out['revenue']/vikor_out['total_cost'])*100 >(gred_out['revenue']/gred_out['total_cost'])*100:
+        rct_cnt += 1
+    
+    if vikor_out['accepted']>gred_out['accepted']:
+        acc_cnt += 1
+  
+    if vikor_out['avg_exec']<gred_out['avg_exec']:
+        exec_cnt += 1
+    
     output_dict["algorithm"].append('')
     output_dict["revenue"].append('')
     output_dict["total_cost"].append('')

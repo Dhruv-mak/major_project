@@ -192,5 +192,18 @@ def main():
     }
     return output_dict
 
+def setup_logger(logger_name, log_file, level=logging.INFO):
+    l = logging.getLogger(logger_name)
+    # formatter = logging.Formatter('%(asctime)s %(levelname)s  : %(message)s')
+    formatter = logging.Formatter('[%(levelname)s] : %(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='w')
+    fileHandler.setFormatter(formatter)
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(formatter)
+
+    l.setLevel(level)
+    l.addHandler(fileHandler)
+    l.addHandler(streamHandler) 
 if __name__ == '__main__':
+    setup_logger('log2','greedy.log')
     main()
