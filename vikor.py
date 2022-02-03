@@ -19,7 +19,7 @@ class temp_map:
 
 def node_map(substrate, virtual, req_no):
     map = [0 for x in range(virtual.nodes)]
-    sorder = get_ranks(substrate) # descending order
+    sorder = get_ranks(substrate) # ascending order
     vorder = get_ranks(virtual) 
     assigned_nodes = set()
     for vnode in vorder:

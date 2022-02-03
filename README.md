@@ -23,4 +23,7 @@ This repo contains the major project implementation and the implimentation of 2 
     - substrate graph extraction from pickle file generated from alib tool
     - **PARAMETERS**: picklefile name for substrate, CRB_range, bandwidth_range, delay_range, Position_range.
 
+7. **Automate**
+    - automatically generates performance matrics in xcel sheet
+
 **Note**: If you want to test the code for static file. see ***static.pickle***. and change the reading file in ***helper.py***.
