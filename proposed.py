@@ -4,7 +4,6 @@ import sys
 import copy
 from datetime import datetime, date
 import logging
-import random
 from proposed_helper import get_ranks
 
 class temp_map:
