@@ -6,14 +6,14 @@ from vne import create_vne
 
 
 class Extract:
-    def get_graphs(self):
+    def get_graphs(self, req_no = 5):
         current = os.path.dirname(os.path.realpath(__file__))
         sys.path.append(os.path.join(os.path.dirname(current), "P3_ALIB_MASTER"))
         current = os.path.join(
             os.path.dirname(current),
             "P3_ALIB_MASTER",
             "input",
-            "KK_Aarnet.pickle",
+            "senario_RedBestel.pickle",
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
@@ -23,13 +23,20 @@ class Extract:
             data.scenario_list[0].substrate.edges,
             para,
         )
-        vne_list = create_vne()
+        vne_list = create_vne(no_requests = req_no)
         return substrate, vne_list
+
+def for_automate(req_no = 5):
+    x = Extract()
+    substrate, vne_list = x.get_graphs(req_no)
+    output = {"substrate": substrate, "vne_list" : vne_list}
+    pickle_file = open("input.pickle", "wb")
+    pickle.dump(output, pickle_file)
 
 
 if __name__ == "__main__":
     x = Extract()
-    substrate, vne_list = x.get_graphs()
+    substrate, vne_list = x.get_graphs(req_no = 15)
     output = {"substrate": substrate, "vne_list" : vne_list}
     pickle_file = open("input.pickle", "wb")
     pickle.dump(output, pickle_file)
