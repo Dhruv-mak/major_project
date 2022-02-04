@@ -20,7 +20,6 @@ def compute_katz(graph):
     return centrality
 
 
-# subtract the edge weights in the nodes.........
 def compute_strength(graph):
     strength = [0 for _ in range(graph.nodes)]
     for u in range(graph.nodes):
@@ -42,7 +41,7 @@ def get_ranks(graph):
     data = np.column_stack((degree, centrality, strength, crb))
     # frame = pd.DataFrame(data, columns=["Degree", "Centrality", "Strength", "CRB"])
     # frame.to_excel('shanon.xlsx')
-    weight_mat = get_weights(data, attr_no)
+    weight_mat = get_weights(data, attr_no)  # attribute weights
     rank_mat = np.zeros((graph.nodes + 2, (attr_no * 2) + 3))
     rank_mat[: graph.nodes, :attr_no] = data[:, :]
     for i in range(attr_no):
@@ -52,51 +51,58 @@ def get_ranks(graph):
             (rank_mat[graph.nodes, i] - rank_mat[: graph.nodes, i])
             / (rank_mat[graph.nodes, i] - rank_mat[graph.nodes + 1, i])
         )
-    v = 0.5 # alpha = 0.5 and (1- alpha) = 0.5
-    rank_mat[: graph.nodes, (2 * attr_no)] = np.sum(
+    v = 0.5  # alpha = 0.5 and (1- alpha) = 0.5
+    rank_mat[: graph.nodes, (2 * attr_no)] = np.sum(  # Rj calculation
         rank_mat[: graph.nodes, attr_no : 2 * attr_no], axis=1
     )
-    rank_mat[: graph.nodes, (2 * attr_no) + 1] = np.max(
+    rank_mat[: graph.nodes, (2 * attr_no) + 1] = np.max(  # Sj calculation
         rank_mat[: graph.nodes, attr_no : 2 * attr_no], axis=1
     )
-    rank_mat[graph.nodes, 2 * attr_no] = np.max(rank_mat[: graph.nodes, (2 * attr_no)])
-    rank_mat[graph.nodes + 1, 2 * attr_no] = np.min(
+    rank_mat[graph.nodes, 2 * attr_no] = np.max(
+        rank_mat[: graph.nodes, (2 * attr_no)]
+    )  # Rjmax
+    rank_mat[graph.nodes + 1, 2 * attr_no] = np.min(  # Rjmin
         rank_mat[: graph.nodes, (2 * attr_no)]
     )
-    rank_mat[graph.nodes, 2 * attr_no + 1] = np.max(
+    rank_mat[graph.nodes, 2 * attr_no + 1] = np.max(  # Sjmax
         rank_mat[: graph.nodes, (2 * attr_no) + 1]
     )
-    rank_mat[graph.nodes + 1, 2 * attr_no + 1] = np.min(
+    rank_mat[graph.nodes + 1, 2 * attr_no + 1] = np.min(  # Sjmin
         rank_mat[: graph.nodes, (2 * attr_no) + 1]
     )
-    rank_mat[: graph.nodes, 2 * attr_no + 2] = v * (
+    rank_mat[: graph.nodes, 2 * attr_no + 2] = v * (  # Qj calculation
         rank_mat[: graph.nodes, 2 * attr_no] - rank_mat[graph.nodes + 1, 2 * attr_no]
     ) / (
         rank_mat[graph.nodes, 2 * attr_no] - rank_mat[graph.nodes + 1, 2 * attr_no]
     ) + (
         1 - v
     ) * (
-        rank_mat[: graph.nodes, 2 * attr_no + 1] - rank_mat[graph.nodes + 1, 2 * attr_no + 1]
+        rank_mat[: graph.nodes, 2 * attr_no + 1]
+        - rank_mat[graph.nodes + 1, 2 * attr_no + 1]
     ) / (
-        rank_mat[graph.nodes, 2 * attr_no + 1] - rank_mat[graph.nodes + 1, 2 * attr_no + 1]
+        rank_mat[graph.nodes, 2 * attr_no + 1]
+        - rank_mat[graph.nodes + 1, 2 * attr_no + 1]
     )
-    ranks = sorted(
+    ranks = sorted(  # array containing weights
         [i for i in range(graph.nodes)], key=lambda x: rank_mat[x, 2 * attr_no + 2]
     )
     print(ranks)
     return ranks
 
+
 # weight calculation using shanon entropy method
 def get_weights(data, no_attr):
     column_sums = data.sum(axis=0)
-    normalized = data / column_sums[:, np.newaxis].transpose()
+    normalized = (
+        data / column_sums[:, np.newaxis].transpose()
+    )  # normalizing the attribute values
     E_j = normalized * np.log(normalized)
     column_sum = np.sum(E_j, axis=0)
     k = 1 / np.log(no_attr)
     column_sum = -k * column_sum
     column_sum = 1 - column_sum
     E_j_column_sum = sum(column_sum)
-    w_j = column_sum / E_j_column_sum
+    w_j = column_sum / E_j_column_sum  # calculated weight array
     return w_j
 
 
