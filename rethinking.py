@@ -15,6 +15,9 @@ class temp_map:
         self.total_cost = sys.maxsize
         self.edge_map = []
         self.edges = []
+        self.edge_weight = []
+        self.path_cost = []
+        self.fitness = 0
 
 # Also check for distance constraint(location)
 def node_map(substrate, virtual, req_no):
@@ -67,7 +70,45 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     logging.info(f"{initial_population}")
     return initial_population
             
+def tournament_selection(elite_population):
+    random.shuffle(elite_population)
+    sz = len(elite_population)//2
+    group1 = elite_population[:sz]
+    group2 = elite_population[sz:]
+    parent1 = temp_map()
+    # confirm for fitness value
+    for j in range(len(group1)):
+        if parent1.fitness < group1[j].fitness:
+            parent1 = group1[j]
+    parent2 = temp_map()
+    for j in range(len(group2)):
+        if parent2.fitness < group2[j].fitness:
+            parent2 = group2[j]
+    return parent1, parent2
+
+def elastic_crossover(parent1, parent2):
+    maxx = len(parent1.node_map)
+    parent2_copy = copy.deepcopy(parent2)
+    parent1_copy = copy.deepcopy(parent1)
+    parent1_pos = random.sample(range(len(parent1.edge_map)), random.randint(0,maxx))
+    parent2_pos = random.sample(range(len(parent1.edge_map)), random.randint(0,maxx))
+    for i in range(len(parent1_pos)):
+        parent1[parent1_pos[i]] = parent2_copy[parent1_pos[i]]
+    for i in range(len(parent2_pos)):
+        parent2[parent2_pos[i]] = parent1_copy[parent2_pos[i]]
+    return parent1, parent2
     
+def mutate(child1, child2, substrate):
+    random_no = random.randint(0, len(child1.edge_map))
+    sel_path = child1.edge_map[random_no]
+    edge = (str(sel_path[0]), str(sel_path[1]))
+    child1.edge_map[random_no] = substrate.findPathFromSrcToDst(edge[0], edge[1], child1.edge_weight[random_no])
+    random_no = random.randint(0, len(child2.edge_map))
+    sel_path = child2.edge_map[random_no]
+    edge = (str(sel_path[0]), str(sel_path[1]))
+    child2.edge_map[random_no] = substrate.findPathFromSrcToDst(edge[0], edge[1], child2.edge_weight[random_no])
+    return child1, child2
+
 def main():
     substrate, vne_list = helper.read_pickle()
     logging.basicConfig(filename="rethinking.log",filemode="w", level=logging.INFO)
@@ -114,14 +155,53 @@ def main():
             logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
+        # [[PATH for edge 1], [PATH for edge 2]]
+        population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
+        initial_population = []
+        if population is None:
+            print(f"initial population can't be generated for {req_no}")
+            continue
+        for i in population:
+            abhi_map = temp_map(vne_list, req_no, req_map.node_map)
+            abhi_map.edge_map.append(i)
+            j = 0
+            hop_count = 0
+            delay_sum = 0
+            for edge in vne_list[req_no].edges:
+                abhi_map.edges.append(edge)
+                abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
+                abhi_map.path_cost.append(abhi_map.edge_weight[j]*len(abhi_map.edge_map[j]))
+                abhi_map.edge_cost += abhi_map.edge_weight[j]*len(abhi_map.edge_map[j])
+                hop_count += len(abhi_map.edge_map[j])
+                delay_sum += hop_count - 1
+                j+=1
+            abhi_map.total_cost = abhi_map.node_cost + abhi_map.edge_cost
+            abhi_map.fitness = (1/abhi_map.total_cost) + (1/hop_count) + 1
+            initial_population.append(abhi_map)
+        elite_population = copy.deepcopy(population)
+        for _ in range(8):
+            print("\n\n ITERATION", _)
+            i=0
+            while i<8:
+                i += 1
+                parent1, parent2 = tournament_selection(elite_population)
+                child1, child2 = elastic_crossover(parent1, parent2)
+                child1.edge_cost = sum(child1.path_cost)
+                child2.edge_cost = sum(child2.path_cost)
+                child1.total_cost = child1.node_cost + child1.edge_cost
+                child2.total_cost = child2.node_cost + child2.edge_cost
+                initial_population.append(child1)
+                initial_population.append(child2)
+                mutated_child1, mutated_child2 = mutate(child1, child2, substrate)
+                mutated_child1.edge_cost = sum(mutated_child1.path_cost)
+                mutated_child2.edge_cost = sum(mutated_child2.path_cost)
+                mutated_child1.total_cost = mutated_child1.node_cost + mutated_child1.edge_cost
+                mutated_child2.total_cost = mutated_child2.node_cost + mutated_child2.edge_cost
+                initial_population.append(mutated_child1)
+                initial_population.append(mutated_child2)
 
-        initial_population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
-        if initial_population == None:
-            print(f"\nEdge is successful\n")
-        else:
-            print(f"\nEdge is not successful\n")
+                
 
-        
 
 if __name__ == '__main__':
     main()
