@@ -3,7 +3,24 @@ import math
 import numpy as np
 import pandas as pd
 import helper
+np.seterr(divide='ignore', invalid='ignore')    #ignores the division by zero (OR value tending to zero)
 
+def divide(a, b):
+    '''
+    INPUT : two numbers a and b
+    OUTPUT: a/b (a divided by b)
+    
+    divide two numbers using log because if the denominator is two
+    low numpy will give warning of dividing by zero. converting to log then
+    applying antilog will give same result (i.e. a/b ) with no warnings.
+
+    divisions in the below code (eg-line number 84-87) can be done using this function
+    instead of dividing directly.
+    '''
+    loga = np.log10(a)
+    logb = np.log10(b)
+    diff = loga-logb
+    return 10**diff
 
 def compute_katz(graph):
     G = nx.Graph()

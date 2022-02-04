@@ -4,7 +4,7 @@ import sys
 import copy
 from datetime import datetime, date
 import logging
-from proposed_helper import get_ranks
+
 global log1
 log1 = logging.getLogger('log1')
 
@@ -197,20 +197,11 @@ def main():
     }
     return output_dict
 
-def setup_logger(logger_name, log_file, level=logging.INFO):
-    l = logging.getLogger(logger_name)
-    # formatter = logging.Formatter('%(asctime)s %(levelname)s  : %(message)s')
-    formatter = logging.Formatter('[%(levelname)s] : %(message)s')
-    fileHandler = logging.FileHandler(log_file, mode='w')
-    fileHandler.setFormatter(formatter)
-    streamHandler = logging.StreamHandler()
-    streamHandler.setFormatter(formatter)
-
-    l.setLevel(level)
-    l.addHandler(fileHandler)
-    l.addHandler(streamHandler) 
-
 
 if __name__ == '__main__':
-    setup_logger('log1','vikor.log')
+    '''
+    The output can be different for same input file also.
+    Because there can be multiple shortest paths from source to destination.
+    '''
+    helper.setup_logger('log1','vikor.log')
     main()
