@@ -1,5 +1,5 @@
 import random
-
+import copy
 
 class Parameters:
     def __init__(
@@ -125,3 +125,49 @@ class Graph:
             ls.append(path[i])
 
         return ls
+
+   
+    '''A recursive function to print all paths from 'u' to 'd'.
+    visited[] keeps track of vertices in current path.
+    path[] stores actual vertices and path_index is current
+    index in path[]'''
+    def printAllPathsUtil(self, u, d, visited, weight, path, all_path):
+        # Mark the current node as visited and store in path
+        visited[int(u)]= True
+        path.append(u)
+        # print(f"{u} {d}")
+        # print(path)
+        # If current vertex is same as destination, then print
+        # current path[]
+        
+        if u==d:
+            all_path.append(copy.deepcopy(path))
+        else:
+            # If current vertex is not destination
+            # Recur for all the vertices adjacent to this vertex
+            for i in self.neighbours[int(u)]:
+                if visited[int(i)] == False and self.edge_weights[(u, i)] >= weight:
+                # if visited[int(i)]== False:
+                    self.printAllPathsUtil(i, d, visited, weight, path, all_path)
+                     
+        # Remove current vertex from path[] and mark it as unvisited
+        path.pop()
+        visited[int(u)]= False
+       
+  
+  
+    # Prints all paths from 's' to 'd'
+    def printAllPaths(self, s, d, weight):
+        visited =[False]*(self.nodes) # Mark all the vertices as not visited 
+        path = []   # Create an array to store a path
+        all_path = []   # array to store all the paths
+        self.printAllPathsUtil(s, d, visited, weight, path, all_path)  # Call the recursive helper function to print all paths
+        return all_path
+  
+if __name__ == '__main__':
+    nodes = 4
+    para = Parameters(50, 100, 50, 100, 0, 100, 0, 100, 1, 1)
+    edges = [('0','1'), ('1','0'), ('0','2'), ('2','0'), ('0','3'),('3','0')]
+    graph = Graph(nodes, edges, para)
+    res = graph.printAllPaths('0', '2', 0)
+    print(f"res {res}")
