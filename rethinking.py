@@ -314,6 +314,66 @@ def main():
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
         accepted += 1
         curr_map[req_no] = selected_map
+    
+
+    ed_cost  = 0
+    no_cost = 0
+    for request in curr_map.values():
+        ed_cost += request.edge_cost # total bandwidth for all the mapped requests
+        no_cost += request.node_cost # total crb for all the mapped requests
+
+    tot_cost = ed_cost + no_cost
+    post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
+    
+    end_time = datetime.now().time()
+    duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
+    
+    print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
+    print(f"Total number of requests embedded is {accepted}")
+    print(f"Embedding ratio is {accepted/len(vne_list)}")
+    print(f"Availabe substrate resources before mapping is {pre_resource}")
+    print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
+    print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
+    print(f"Average node utilization {no_cost/pre_resource_nodecost}")
+    print(f"Average execution time {duration/len(vne_list)}")
+
+    logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
+    logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
+    temp = []
+    for node in range(substrate.nodes):
+        temp.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    temp = []
+    for edge in substrate.edges:
+        temp.append((edge,substrate.edge_weights[edge]))
+    logging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")   
+    
+    logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
+    if tot_cost == 0:
+        logging.error(f"\t\tCouldn't embedd any request")
+        return
+
+    logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
+    logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
+    logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
+    logging.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    logging.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
+    logging.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
+    logging.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
+    logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
+    # logging.shutdown()
+    output_dict = {
+        "revenue": revenue,
+        "total_cost" : tot_cost,
+        "accepted" : accepted,
+        "total_request": len(vne_list),
+        "pre_resource": pre_resource,
+        "post_resource": post_resource,
+        "avg_link": (ed_cost/pre_resource_edgecost)*100,
+        "avg_node": (no_cost/pre_resource_nodecost)*100,
+        "avg_exec": (duration),
+    }
+    return output_dict
 
                 
 
