@@ -5,7 +5,6 @@ from datetime import datetime, date
 import logging
 import random
 
-
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
         self.node_map = map
@@ -36,24 +35,40 @@ def node_map(substrate, virtual, req_no):
                 return None
     return map
 
-def selectPaths(i, length, all_paths, chromosome, init_pop):
+def selectPaths(i, virtual_edges, all_paths, chromosome, init_pop, substrate, substrate_copy):
 
-    if len(chromosome) == length:
-        init_pop.append(copy.deepcopy(chromosome))
+    if len(chromosome) == len(virtual_edges):
+        flag = False
+        substrate_copy = copy.deepcopy(substrate)
+        for i in range(len(virtual_edges)):
+            path = chromosome[i]
+            weight = virtual_edges[i]
+            for j in range(1, len(path)):
+                substrate_copy.edge_weights[(path[j - 1], path[j])] -= weight
+                substrate_copy.edge_weights[(path[j], path[j - 1])] -= weight
+                if( substrate_copy.edge_weights[(path[j], path[j - 1])] <0):
+                    flag = True
+                    break
+            if flag==True:
+                break
+        if flag == False:
+            init_pop.append(copy.deepcopy(chromosome))
         if len(init_pop) == 8:
             return
     else:
         for gene in all_paths[i]:
             chromosome.append(gene)
-            selectPaths(i+1, length, all_paths, chromosome, init_pop)
+            selectPaths(i+1, virtual_edges, all_paths, chromosome, init_pop, substrate, substrate_copy)
             chromosome.pop()
 
 def edge_map(substrate, virtual, req_no, req_map, vne_list):
     substrate_copy = copy.deepcopy(substrate)
     all_paths = []
+    virtual_edges = []
     for edge in virtual.edges:
         if int(edge[0]) < int(edge[1]):
             weight = virtual.edge_weights[edge]
+            virtual_edges.append(weight)
             left_node = req_map.node_map[int(edge[0])]
             right_node = req_map.node_map[int(edge[1])]
             paths = substrate_copy.printAllPaths(str(left_node), str(right_node), weight)     #find all paths from src to dst 
@@ -61,12 +76,12 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             if paths == None:
                 return None
             all_paths.append(paths)
-    logging.info(f"{all_paths}")
+    logging.info(f"{len(all_paths)}")
     initial_population = []
     chromosome = []
-    selectPaths(0, len(virtual.edges)//2, all_paths, chromosome, initial_population)
+    selectPaths(0, virtual_edges, all_paths, chromosome, initial_population, substrate, substrate_copy)
 
-    logging.info(f"{initial_population}")
+    logging.info(f"\t\t Initial_population: {initial_population}")
     return initial_population
             
 def tournament_selection(elite_population):
@@ -228,7 +243,7 @@ def main():
             for edge in vne_list[req_no].edges:
                 abhi_map.edges.append(edge)
                 abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
-                abhi_map.path_cost.append(abhi_map.edge_weight[j]*len(abhi_map.edge_map[j]))
+                abhi_map.path_cost.append(vne_list[req_no].edge_weights[edge]*len(abhi_map.edge_map[j]))
                 abhi_map.edge_cost += abhi_map.edge_weight[j]*len(abhi_map.edge_map[j])
                 hop_count += len(abhi_map.edge_map[j])
                 delay_sum += hop_count - 1
