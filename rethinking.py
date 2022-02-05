@@ -1,10 +1,11 @@
+from re import X
 import helper
 import sys
 import copy
 from datetime import datetime, date
 import logging
 import random
-
+x = False
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
         self.node_map = map
@@ -36,11 +37,16 @@ def node_map(substrate, virtual, req_no):
     return map
 
 def selectPaths(i, virtual_edges, all_paths, chromosome, init_pop, substrate, substrate_copy):
-
+    global x
+    if x ==True:
+        return None
+    # if i >= len(virtual_edges):
+    #     return None
     if len(chromosome) == len(virtual_edges):
         flag = False
         substrate_copy = copy.deepcopy(substrate)
         for i in range(len(virtual_edges)):
+            # print(f"chrom {chromosome}")
             path = chromosome[i]
             weight = virtual_edges[i]
             for j in range(1, len(path)):
@@ -53,13 +59,19 @@ def selectPaths(i, virtual_edges, all_paths, chromosome, init_pop, substrate, su
                 break
         if flag == False:
             init_pop.append(copy.deepcopy(chromosome))
+            # print(f"appended : {len(init_pop)}  L : {chromosome}")
         if len(init_pop) == 8:
-            return
+            x = True
+            return None
     else:
         for gene in all_paths[i]:
             chromosome.append(gene)
             selectPaths(i+1, virtual_edges, all_paths, chromosome, init_pop, substrate, substrate_copy)
             chromosome.pop()
+            
+            
+    # return None
+        
 
 def edge_map(substrate, virtual, req_no, req_map, vne_list):
     substrate_copy = copy.deepcopy(substrate)
@@ -76,7 +88,8 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             if paths == None:
                 return None
             all_paths.append(paths)
-    logging.info(f"{len(all_paths)}")
+    for ls in all_paths:
+        logging.info(f"{len(ls)}")
     initial_population = []
     chromosome = []
     selectPaths(0, virtual_edges, all_paths, chromosome, initial_population, substrate, substrate_copy)
