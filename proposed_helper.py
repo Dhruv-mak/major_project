@@ -58,7 +58,7 @@ def get_ranks(graph):
     data = np.column_stack((degree, centrality, strength, crb))
     # frame = pd.DataFrame(data, columns=["Degree", "Centrality", "Strength", "CRB"])
     # frame.to_excel('shanon.xlsx')
-    weight_mat = get_weights(data, attr_no)  # attribute weights
+    weight_mat = get_weights(data, graph.nodes)  # attribute weights
     rank_mat = np.zeros((graph.nodes + 2, (attr_no * 2) + 3))
     rank_mat[: graph.nodes, :attr_no] = data[:, :]
     for i in range(attr_no):
@@ -108,14 +108,14 @@ def get_ranks(graph):
 
 
 # weight calculation using shanon entropy method
-def get_weights(data, no_attr):
+def get_weights(data, nodes):
     column_sums = data.sum(axis=0)
     normalized = (
         data / column_sums[:, np.newaxis].transpose()
     )  # normalizing the attribute values
     E_j = normalized * np.log(normalized)
     column_sum = np.sum(E_j, axis=0)
-    k = 1 / np.log(no_attr)
+    k = 1 / np.log(nodes)
     column_sum = -k * column_sum
     column_sum = 1 - column_sum
     E_j_column_sum = sum(column_sum)
