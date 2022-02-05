@@ -5,6 +5,7 @@ import copy
 from datetime import datetime, date
 import logging
 import random
+from math import sqrt
 x = False
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -18,6 +19,12 @@ class temp_map:
         self.edge_weight = []
         self.path_cost = []
         self.fitness = 0
+def check_location(substrate, virtual, snode, vnode, radius):
+    x1, y1 = substrate.node_pos[snode]
+    x2, y2 = virtual.node_pos[vnode]
+    if sqrt(((x2-x1)*(x2-x1)) - ((y2-y1)*(y2-y1))) <= radius:
+        return True
+    return False
 
 # Also check for distance constraint(location)
 def node_map(substrate, virtual, req_no):
@@ -27,7 +34,7 @@ def node_map(substrate, virtual, req_no):
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
-            if substrate.node_weights[snode] >= virtual.node_weights[vnode] and snode not in assigned_nodes:
+            if substrate.node_weights[snode] >= virtual.node_weights[vnode] and snode not in assigned_nodes and check_location(substrate, virtual, snode, vnode, 20):
                 map[vnode] = snode
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
                 assigned_nodes.add(snode)
