@@ -153,6 +153,19 @@ def import_elite(population):
         population_set.add(get_hashable_map[i])
     return population, population_set        
 
+def get_best_map(population):
+    return sorted(population, key= lambda x:population[x].fitness, reverse=True)[0]
+
+def substract_from_substrate(substrate, virtual, selected_map):
+    for i, node in enumerate(selected_map.node_map):
+        substrate.node_weights[node] -= virtual.node_weights[i]
+    for i, path in enumerate(selected_map.edge_map):
+        for j in range(1, len(path)):
+            substrate.edge_weights[(str(path[j-1]), str(path[j]))] -= selected_map.edge_weight[i]
+
+def get_fitness(chromosome, substrate):
+    pass
+
 def main():
     substrate, vne_list = helper.read_pickle()
     logging.basicConfig(filename="rethinking.log",filemode="w", level=logging.INFO)
@@ -256,6 +269,10 @@ def main():
                     population_set.add(get_hashable_map(mutated_child2))
 
             elite_population, population_set = import_elite(elite_population)
+        selected_map = get_best_map(elite_population)
+        substract_from_substrate(substrate, vne_list[req_no], selected_map)
+        accepted += 1
+        curr_map[req_no] = selected_map
 
                 
 
