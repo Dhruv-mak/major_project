@@ -191,8 +191,14 @@ def substract_from_substrate(substrate, virtual, selected_map):
         for j in range(1, len(path)):
             substrate.edge_weights[(str(path[j-1]), str(path[j]))] -= selected_map.edge_weight[i]
 
-def get_fitness(chromosome, substrate):
-    pass
+def get_fitness(chromosome, virtual):
+    hop_count = 0
+    delay_sum = 0
+    for i in len(virtual.edges):
+        hop_count += len(chromosome.edge_map[i])
+        delay_sum += hop_count - 1
+    return (1/chromosome.total_cost) + (1/hop_count) + (1/delay_sum)
+
 
 def main():
     substrate, vne_list = helper.read_pickle()
@@ -251,18 +257,14 @@ def main():
             abhi_map = temp_map(vne_list, req_no, req_map.node_map)
             abhi_map.edge_map.append(i)
             j = 0
-            hop_count = 0
-            delay_sum = 0
             for edge in vne_list[req_no].edges:
                 abhi_map.edges.append(edge)
                 abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
                 abhi_map.path_cost.append(vne_list[req_no].edge_weights[edge]*len(abhi_map.edge_map[j]))
                 abhi_map.edge_cost += abhi_map.edge_weight[j]*len(abhi_map.edge_map[j])
-                hop_count += len(abhi_map.edge_map[j])
-                delay_sum += hop_count - 1
                 j+=1
             abhi_map.total_cost = abhi_map.node_cost + abhi_map.edge_cost
-            abhi_map.fitness = (1/abhi_map.total_cost) + (1/hop_count) + 1
+            abhi_map.fitness = get_fitness(abhi_map, vne_list[req_no])
             initial_population.append(abhi_map)
             population_set.add(get_hashable_map(abhi_map))
         elite_population = copy.deepcopy(population)
@@ -278,11 +280,13 @@ def main():
                     child1.total_cost = child1.node_cost + child1.edge_cost
                     elite_population.append(child1)
                     population_set.add(get_hashable_map(child1))
+                    child1.fitness = get_fitness(child1, vne_list[req_no])
                 if child2 is not None:
                     child2.edge_cost = sum(child2.path_cost)
                     child2.total_cost = child2.node_cost + child2.edge_cost
                     elite_population.append(child2)
                     population_set.add(get_hashable_map(child2))
+                    child2.fitness = get_fitness(child1, vne_list[req_no])
 
                 mutated_child1, mutated_child2 = mutate(child1, child2, substrate, population_set)
                 if mutated_child1 is not None:
@@ -290,11 +294,13 @@ def main():
                     mutated_child1.total_cost = mutated_child1.node_cost + mutated_child1.edge_cost
                     elite_population.append(mutated_child1)
                     population_set.add(get_hashable_map(mutated_child1))
+                    mutated_child1.fitness = get_fitness(mutated_child1, vne_list[req_no])
                 if child2 is not None:
                     mutated_child2.edge_cost = sum(mutated_child2.path_cost)
                     mutated_child2.total_cost = mutated_child2.node_cost + mutated_child2.edge_cost
                     elite_population.append(mutated_child2)
                     population_set.add(get_hashable_map(mutated_child2))
+                    mutated_child2.fitness = get_fitness(mutated_child2, vne_list[req_no])
 
             elite_population, population_set = import_elite(elite_population)
         selected_map = get_best_map(elite_population)
