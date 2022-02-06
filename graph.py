@@ -34,7 +34,7 @@ class Graph:
         lower_node = parameters.lower_node
         upper_node = parameters.upper_node
         self.nodes = nodes
-        self.edges = edges
+        self.edges = list(edges)
         self.neighbours = dict()
         self.node_weights = dict()
         self.edge_weights = dict()
