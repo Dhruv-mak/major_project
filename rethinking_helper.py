@@ -6,7 +6,7 @@ import logging
 
 x = False
 
-
+log3 = logging.getLogger('log3')
 class temp_map:
     def __init__(self, vne_list, req_no, map=[]) -> None:
         self.node_map = map
@@ -173,15 +173,15 @@ def elastic_crossover(parent1, parent2, population_set, substrate, virtual, itr)
         parent2.edge_map[parent2_pos[i]] = parent1_copy.edge_map[parent2_pos[i]]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
         parent1 = None
-        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
+        #log3.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
     if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
         parent2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
+        #log3.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
     if parent1 is not None and get_hashable_map(parent1) in population_set:
-        logging.warning(f"\t\t{itr}-Could not get distict child1")
+        #log3.warning(f"\t\t{itr}-Could not get distict child1")
         parent1 = None
     if parent1 is not None and get_hashable_map(parent1) in population_set:
-        logging.warning(f"\t\t{itr}-could not get distict child2")
+        #log3.warning(f"\t\t{itr}-could not get distict child2")
         parent2 = None
     return parent1, parent2
 
@@ -201,19 +201,19 @@ def mutate(child1, child2, substrate, population_set, virtual, itr):    #itr is 
     )
     if not check_compatibility(child1, copy.deepcopy(substrate), virtual):
         child1 = None
-        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
+        #log3.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
     if not check_compatibility(child2, copy.deepcopy(substrate), virtual):
         child2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
+        #log3.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
     if child1 is not None and get_hashable_map(child1) in population_set:
-        logging.warning(f"\t\t{itr}-Could not get distict child1")
+        #log3.warning(f"\t\t{itr}-Could not get distict child1")
         child1 = None
     if (
         child2 is not None
         and get_hashable_map(child2) in population_set
         and child2 is not None
     ):
-        logging.warning(f"\t\t{itr}-could not get distict child2")
+        #log3.warning(f"\t\t{itr}-could not get distict child2")
         child2 = None
     return child1, child2
 
