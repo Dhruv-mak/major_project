@@ -147,6 +147,7 @@ def main():
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
         accepted += 1
         curr_map[req_no] = selected_map
+        revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
 
     ed_cost = 0
     no_cost = 0

@@ -36,7 +36,7 @@ def node_map(substrate, virtual, req_no):
         [a for a in range(substrate.nodes)],
         key=lambda x: substrate.node_weights[x],
         reverse=True,
-    )  # ascending order
+    )  # descending order
     vorder = sorted(
         [a for a in range(virtual.nodes)],
         key=lambda x: virtual.node_weights[x],
@@ -48,7 +48,7 @@ def node_map(substrate, virtual, req_no):
             if (
                 substrate.node_weights[snode] >= virtual.node_weights[vnode]
                 and snode not in assigned_nodes
-                and check_location(substrate, virtual, snode, vnode, 20)
+                and check_location(substrate, virtual, snode, vnode, 100)
             ):
                 map[vnode] = snode
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
@@ -133,11 +133,11 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             if paths == []:
                 return None
             all_paths.append(paths)
-    for ls in all_paths:
-        logging.info(f"{len(ls)}")
     initial_population = select_random_path(req_map, vne_list, req_no, all_paths, substrate_copy)
 
-    logging.info(f"\t\t Initial_population: {initial_population}")
+    logging.info(f"\t\tInitial_population for req no:{req_no}::::")
+    for i in initial_population:
+        logging.info(f"\t\t\t{i.edge_map}")
     return initial_population
 
 
