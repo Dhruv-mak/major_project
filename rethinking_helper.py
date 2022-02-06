@@ -134,10 +134,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
                 return None
             all_paths.append(paths)
     initial_population = select_random_path(req_map, vne_list, req_no, all_paths, substrate_copy)
-
-    logging.info(f"\t\tInitial_population for req no:{req_no}::::")
-    for i in initial_population:
-        logging.info(f"\t\t\t{i.edge_map}")
+  
     return initial_population
 
 
@@ -158,7 +155,7 @@ def tournament_selection(elite_population, vne_list, req_no):
     return parent1, parent2
 
 
-def elastic_crossover(parent1, parent2, population_set, substrate, virtual):
+def elastic_crossover(parent1, parent2, population_set, substrate, virtual, itr):   #itr is inside loop number
     if len(parent1.edge_map) == 1:
         return None, None
     maxx = len(parent1.edge_map)
@@ -176,20 +173,20 @@ def elastic_crossover(parent1, parent2, population_set, substrate, virtual):
         parent2.edge_map[parent2_pos[i]] = parent1_copy.edge_map[parent2_pos[i]]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
         parent1 = None
-        print("could not add child1 due to incompatibility")
+        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
     if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
         parent2 = None
-        print("could not add child2 due to incompatibility")
+        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
     if parent1 is not None and get_hashable_map(parent1) in population_set:
-        print("Could not get distict child1")
+        logging.warning(f"\t\t{itr}-Could not get distict child1")
         parent1 = None
     if parent1 is not None and get_hashable_map(parent1) in population_set:
-        print("could not get distict child2")
+        logging.warning(f"\t\t{itr}-could not get distict child2")
         parent2 = None
     return parent1, parent2
 
 
-def mutate(child1, child2, substrate, population_set, virtual):
+def mutate(child1, child2, substrate, population_set, virtual, itr):    #itr is inside loop number
     random_no = random.randint(0, len(child1.edge_map) -  1)
     sel_path = child1.edge_map[random_no]
     edge = (str(sel_path[0]), str(sel_path[1]))
@@ -204,19 +201,19 @@ def mutate(child1, child2, substrate, population_set, virtual):
     )
     if not check_compatibility(child1, copy.deepcopy(substrate), virtual):
         child1 = None
-        print("could not add child1 due to incompatibility")
+        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
     if not check_compatibility(child2, copy.deepcopy(substrate), virtual):
         child2 = None
-        print("could not add child2 due to incompatibility")
+        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
     if child1 is not None and get_hashable_map(child1) in population_set:
-        print("Could not get distict child1")
+        logging.warning(f"\t\t{itr}-Could not get distict child1")
         child1 = None
     if (
         child2 is not None
         and get_hashable_map(child2) in population_set
         and child2 is not None
     ):
-        print("could not get distict child2")
+        logging.warning(f"\t\t{itr}-could not get distict child2")
         child2 = None
     return child1, child2
 

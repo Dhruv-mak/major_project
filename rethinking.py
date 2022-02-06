@@ -59,7 +59,6 @@ def main():
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is None:
-            print(f"Node mapping not possible for req no {req_no}")
             logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
@@ -67,7 +66,7 @@ def main():
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
         if population is None:
-            print(f"initial population can't be generated for {req_no}")
+            logging.warning(f"\t\tinitial population can't be generated for {req_no}")
             continue
         population_set = set()
         for i in population:
@@ -89,9 +88,13 @@ def main():
             abhi_map.fitness = get_fitness(abhi_map, vne_list[req_no])
             initial_population.append(abhi_map)
             population_set.add(get_hashable_map(abhi_map))
+        logging.info(f"\t\tInitial_population for req no: {req_no}::::")
+        for i in initial_population:
+            logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\t tot_cost: {i.total_cost}")
+        logging.info(f"\n\n")
         elite_population = copy.deepcopy(initial_population)
         for _ in range(8):
-            print("\n\n ITERATION", _)
+            logging.info(f"\t\t\t\t ITERATION {_}")
             i = 0
             while i < 8:
                 i += 1
@@ -99,26 +102,26 @@ def main():
                     elite_population, vne_list, req_no
                 )
                 child1, child2 = elastic_crossover(
-                    parent1, parent2, population_set, substrate, vne_list[req_no]
-                )
+                    parent1, parent2, population_set, substrate, vne_list[req_no], i
+                )   # last argument i is for identify which inside loop 
                 if child1 is not None:
                     child1.edge_cost = sum(child1.path_cost)
                     child1.total_cost = child1.node_cost + child1.edge_cost
                     elite_population.append(child1)
                     population_set.add(get_hashable_map(child1))
                     child1.fitness = get_fitness(child1, vne_list[req_no])
-                    print("child1 added to population")
+                    logging.info(f"\t\t\t{i}-Added Crossovered Child1 {child1.edge_map}\tfitness: {child1.fitness:.4f}\ttot_cost: {child1.total_cost}")
                 if child2 is not None:
                     child2.edge_cost = sum(child2.path_cost)
                     child2.total_cost = child2.node_cost + child2.edge_cost
                     elite_population.append(child2)
                     population_set.add(get_hashable_map(child2))
                     child2.fitness = get_fitness(child2, vne_list[req_no])
-                    print("child2 added to population")
+                    logging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
                 if child1 is not None and child2 is not None:
                     mutated_child1, mutated_child2 = mutate(
-                        child1, child2, substrate, population_set, vne_list[req_no]
-                    )
+                        child1, child2, substrate, population_set, vne_list[req_no], i
+                    ) # last argument i is for identify which inside loop
                     if mutated_child1 is not None:
                         mutated_child1.edge_cost = sum(mutated_child1.path_cost)
                         mutated_child1.total_cost = (
@@ -129,7 +132,7 @@ def main():
                         mutated_child1.fitness = get_fitness(
                             mutated_child1, vne_list[req_no]
                         )
-                        print("mutated_child1 added to population")
+                        logging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
                     if mutated_child2 is not None:
                         mutated_child2.edge_cost = sum(mutated_child2.path_cost)
                         mutated_child2.total_cost = (
@@ -140,14 +143,49 @@ def main():
                         mutated_child2.fitness = get_fitness(
                             mutated_child2, vne_list[req_no]
                         )
-                        print("mutated_child2 added to population")
-
+                        logging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
+            logging.info(f"")
+            logging.info(f"\t\t\telite population after iteration {_}")
+            for i in initial_population:
+                logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
+            logging.info(f"")
         selected_map = get_best_map(elite_population)
+        
+        logging.info(f"\n")
+        ls = dict()
+        c =0
+        for ed in selected_map.edges:
+            ls[ed] = selected_map.edge_map[c]
+            c += 1
+        logging.info(f"\t\tThe selected chromosome for VNR {req_no} is {selected_map.edge_map}\tfitness: {selected_map.fitness:.4f}\ttot_cost: {selected_map.total_cost}")
+        logging.info(f"\t\tThe node map of VNR {req_no} is {selected_map.node_map}")
+        logging.info(f"\t\tThe edge map of VNR {req_no} is {ls}")
+        
+        sub_wt = []
+        for node in range(substrate.nodes):
+            sub_wt.append((node, substrate.node_weights[node]))
+        logging.info(f"\t\tSubstrate node before mapping VNR-{req_no} is {sub_wt}")
+        sub_wt = []
+        for edge in substrate.edges:
+            sub_wt.append((edge, substrate.edge_weights[edge]))
+        logging.info(f"\t\tSubstrate edge before mapping VNR-{req_no} is {sub_wt}")
+
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
+        
+        sub_wt = []
+        for node in range(substrate.nodes):
+            sub_wt.append((node, substrate.node_weights[node]))
+        logging.info(f"\t\tSubstrate after mapping VNR-{req_no} is {sub_wt}")
+        sub_wt = []
+        for edge in substrate.edges:
+            sub_wt.append((edge, substrate.edge_weights[edge]))
+        logging.info(f"\t\tSubstrate edge after mapping VNR-{req_no} is {sub_wt}")
+
         accepted += 1
         curr_map[req_no] = selected_map
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
+        logging.info(f"\n\n")
 
     ed_cost = 0
     no_cost = 0
