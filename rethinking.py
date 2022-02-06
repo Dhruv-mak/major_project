@@ -5,7 +5,7 @@ import copy
 from datetime import datetime, date
 import logging
 import random
-from math import sqrt
+import math
 x = False
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -22,7 +22,7 @@ class temp_map:
 def check_location(substrate, virtual, snode, vnode, radius):
     x1, y1 = substrate.node_pos[snode]
     x2, y2 = virtual.node_pos[vnode]
-    if sqrt(((x2-x1)*(x2-x1)) - ((y2-y1)*(y2-y1))) <= radius:
+    if math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1))) <= radius:
         return True
     return False
 
@@ -104,42 +104,42 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     logging.info(f"\t\t Initial_population: {initial_population}")
     return initial_population
             
-def tournament_selection(elite_population):
+def tournament_selection(elite_population, vne_list, req_no):
     random.shuffle(elite_population)
     sz = len(elite_population)//2
     group1 = elite_population[:sz]
     group2 = elite_population[sz:]
-    parent1 = temp_map()
+    parent1 = temp_map(vne_list, req_no)
     # confirm for fitness value
     for j in range(len(group1)):
         if parent1.fitness < group1[j].fitness:
             parent1 = group1[j]
-    parent2 = temp_map()
+    parent2 = temp_map(vne_list, req_no)
     for j in range(len(group2)):
         if parent2.fitness < group2[j].fitness:
             parent2 = group2[j]
     return parent1, parent2
 
-def elastic_crossover(parent1, parent2, population_set):
+def elastic_crossover(parent1, parent2, population_set, substrate):
     maxx = len(parent1.node_map)
     parent2_copy = copy.deepcopy(parent2)
     parent1_copy = copy.deepcopy(parent1)
     parent1_pos = random.sample(range(len(parent1.edge_map)), random.randint(1,maxx-1))
     for i in range(len(parent1_pos)):
-        parent1[parent1_pos[i]] = parent2_copy[parent1_pos[i]]
+        parent1.edge_map[parent1_pos[i]] = parent2_copy.edge_map[parent1_pos[i]]
     parent2_pos = random.sample(range(len(parent1.edge_map)), random.randint(1,maxx-1))
     for i in range(len(parent2_pos)):
-        parent2[parent2_pos[i]] = parent1_copy[parent2_pos[i]]
-    if check_compatibility(parent1):
+        parent2.edge_map[parent2_pos[i]] = parent1_copy.edge_map[parent2_pos[i]]
+    if check_compatibility(parent1, copy.deepcopy(substrate)):
         parent1 = None
         print("could not add child1 due to incompatibility")
-    if check_compatibility(parent2):
+    if check_compatibility(parent2, copy.deepcopy(substrate)):
         parent2 = None
         print("could not add child2 due to incompatibility")
-    if get_hashable_map(parent1) in population_set:
+    if parent1 is not None and get_hashable_map(parent1) in population_set:
         print("Could not get distict child1")
         parent1 = None
-    if get_hashable_map(parent2) in population_set:
+    if parent1 is not None and get_hashable_map(parent1) in population_set:
         print("could not get distict child2")
         parent2 = None
     return parent1, parent2
@@ -153,16 +153,16 @@ def mutate(child1, child2, substrate, population_set):
     sel_path = child2.edge_map[random_no]
     edge = (str(sel_path[0]), str(sel_path[1]))
     child2.edge_map[random_no] = substrate.findPathFromSrcToDst(edge[0], edge[1], child2.edge_weight[random_no])
-    if check_compatibility(child1):
+    if check_compatibility(child1, copy.deepcopy(substrate)):
         child1 = None
         print("could not add child1 due to incompatibility")
-    if check_compatibility(child2):
+    if check_compatibility(child2, copy.deepcopy(substrate)):
         child2 = None
         print("could not add child2 due to incompatibility")
-    if get_hashable_map(child1) in population_set:
+    if child1 is not None and get_hashable_map(child1) in population_set:
         print("Could not get distict child1")
         child1 = None
-    if get_hashable_map(child2) in population_set:
+    if child2 is not None and get_hashable_map(child2) in population_set and child2 is not None:
         print("could not get distict child2")
         child2 = None
     return child1, child2
@@ -175,21 +175,21 @@ def get_hashable_map(chromosome):
 
 def check_compatibility(chromosome, substrate_copy):
     for i, path in enumerate(chromosome.edge_map):
-        for i in range(1, len(path)):
-            edge = (str(path[i-1]), str(path[i]))
+        for j in range(1, len(path)):
+            edge = (str(path[j-1]), str(path[j]))
             if substrate_copy.edge_weights[edge] < chromosome.edge_weight[i]:
                 return False
     return True
 
 def import_elite(population):
-    population = sorted(population, key=lambda x:population[x].fitness, reverse=True)[:8]
+    population = sorted(population, key=lambda x:x.fitness, reverse=True)[:8]
     population_set = set()
     for i in population:
-        population_set.add(get_hashable_map[i])
+        population_set.add(get_hashable_map(i))
     return population, population_set        
 
 def get_best_map(population):
-    return sorted(population, key= lambda x:population[x].fitness, reverse=True)[0]
+    return sorted(population, key= lambda x:x.fitness, reverse=True)[0]
 
 def substract_from_substrate(substrate, virtual, selected_map):
     for i, node in enumerate(selected_map.node_map):
@@ -201,7 +201,7 @@ def substract_from_substrate(substrate, virtual, selected_map):
 def get_fitness(chromosome, virtual):
     hop_count = 0
     delay_sum = 0
-    for i in len(virtual.edges):
+    for i in range(len(virtual.edges)//2):
         hop_count += len(chromosome.edge_map[i])
         delay_sum += hop_count - 1
     return (1/chromosome.total_cost) + (1/hop_count) + (1/delay_sum)
@@ -262,26 +262,27 @@ def main():
         population_set = set()
         for i in population:
             abhi_map = temp_map(vne_list, req_no, req_map.node_map)
-            abhi_map.edge_map.append(i)
+            abhi_map.edge_map = i
             j = 0
             for edge in vne_list[req_no].edges:
-                abhi_map.edges.append(edge)
-                abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
-                abhi_map.path_cost.append(vne_list[req_no].edge_weights[edge]*len(abhi_map.edge_map[j]))
-                abhi_map.edge_cost += abhi_map.edge_weight[j]*len(abhi_map.edge_map[j])
-                j+=1
+                if int(edge[0]) > int(edge[1]):
+                    abhi_map.edges.append(edge)
+                    abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
+                    abhi_map.path_cost.append(vne_list[req_no].edge_weights[edge]*len(abhi_map.edge_map[j]))
+                    abhi_map.edge_cost += abhi_map.edge_weight[j]*len(abhi_map.edge_map[j])
+                    j+=1
             abhi_map.total_cost = abhi_map.node_cost + abhi_map.edge_cost
             abhi_map.fitness = get_fitness(abhi_map, vne_list[req_no])
             initial_population.append(abhi_map)
             population_set.add(get_hashable_map(abhi_map))
-        elite_population = copy.deepcopy(population)
+        elite_population = copy.deepcopy(initial_population)
         for _ in range(8):
             print("\n\n ITERATION", _)
             i=0
             while i<8:
                 i += 1
-                parent1, parent2 = tournament_selection(elite_population)
-                child1, child2 = elastic_crossover(parent1, parent2, population_set)
+                parent1, parent2 = tournament_selection(elite_population, vne_list, req_no)
+                child1, child2 = elastic_crossover(parent1, parent2, population_set, substrate)
                 if child1 is not None:
                     child1.edge_cost = sum(child1.path_cost)
                     child1.total_cost = child1.node_cost + child1.edge_cost
@@ -294,20 +295,20 @@ def main():
                     elite_population.append(child2)
                     population_set.add(get_hashable_map(child2))
                     child2.fitness = get_fitness(child1, vne_list[req_no])
-
-                mutated_child1, mutated_child2 = mutate(child1, child2, substrate, population_set)
-                if mutated_child1 is not None:
-                    mutated_child1.edge_cost = sum(mutated_child1.path_cost)
-                    mutated_child1.total_cost = mutated_child1.node_cost + mutated_child1.edge_cost
-                    elite_population.append(mutated_child1)
-                    population_set.add(get_hashable_map(mutated_child1))
-                    mutated_child1.fitness = get_fitness(mutated_child1, vne_list[req_no])
-                if child2 is not None:
-                    mutated_child2.edge_cost = sum(mutated_child2.path_cost)
-                    mutated_child2.total_cost = mutated_child2.node_cost + mutated_child2.edge_cost
-                    elite_population.append(mutated_child2)
-                    population_set.add(get_hashable_map(mutated_child2))
-                    mutated_child2.fitness = get_fitness(mutated_child2, vne_list[req_no])
+                if child1 is not None and child2 is not None:
+                    mutated_child1, mutated_child2 = mutate(child1, child2, substrate, population_set)
+                    if mutated_child1 is not None:
+                        mutated_child1.edge_cost = sum(mutated_child1.path_cost)
+                        mutated_child1.total_cost = mutated_child1.node_cost + mutated_child1.edge_cost
+                        elite_population.append(mutated_child1)
+                        population_set.add(get_hashable_map(mutated_child1))
+                        mutated_child1.fitness = get_fitness(mutated_child1, vne_list[req_no])
+                    if child2 is not None:
+                        mutated_child2.edge_cost = sum(mutated_child2.path_cost)
+                        mutated_child2.total_cost = mutated_child2.node_cost + mutated_child2.edge_cost
+                        elite_population.append(mutated_child2)
+                        population_set.add(get_hashable_map(mutated_child2))
+                        mutated_child2.fitness = get_fitness(mutated_child2, vne_list[req_no])
 
             elite_population, population_set = import_elite(elite_population)
         selected_map = get_best_map(elite_population)
