@@ -1,4 +1,3 @@
-from re import X
 import helper
 import copy
 from datetime import datetime, date

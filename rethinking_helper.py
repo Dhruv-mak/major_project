@@ -169,7 +169,7 @@ def tournament_selection(elite_population, vne_list, req_no):
 def elastic_crossover(
     parent1, parent2, population_set, substrate, virtual, itr
 ):  # itr is inside loop number
-    if len(parent1.edge_map) == 1:
+    if len(parent1.edge_map) <= 1:
         return None, None
     maxx = len(parent1.edge_map)
     maxx = int(0.75*(maxx))
