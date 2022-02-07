@@ -118,32 +118,40 @@ def main():
                     population_set.add(get_hashable_map(child2))
                     child2.fitness = get_fitness(child2, vne_list[req_no])
                     logging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
-                if child1 is not None and child2 is not None:
-                    mutated_child1, mutated_child2 = mutate(
-                        child1, child2, substrate, population_set, vne_list[req_no], i
+                if child1 is not None:
+                    mutated_child1 = mutate(
+                        child1, substrate, population_set, vne_list[req_no], i
                     ) # last argument i is for identify which inside loop
-                    if mutated_child1 is not None:
-                        mutated_child1.edge_cost = sum(mutated_child1.path_cost)
-                        mutated_child1.total_cost = (
-                            mutated_child1.node_cost + mutated_child1.edge_cost
-                        )
-                        elite_population.append(mutated_child1)
-                        population_set.add(get_hashable_map(mutated_child1))
-                        mutated_child1.fitness = get_fitness(
-                            mutated_child1, vne_list[req_no]
-                        )
-                        logging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
-                    if mutated_child2 is not None:
-                        mutated_child2.edge_cost = sum(mutated_child2.path_cost)
-                        mutated_child2.total_cost = (
-                            mutated_child2.node_cost + mutated_child2.edge_cost
-                        )
-                        elite_population.append(mutated_child2)
-                        population_set.add(get_hashable_map(mutated_child2))
-                        mutated_child2.fitness = get_fitness(
-                            mutated_child2, vne_list[req_no]
-                        )
-                        logging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
+                else:
+                    mutated_child1 = None
+                if child2 is not None:
+                    mutated_child2 = mutate(
+                        child2, substrate, population_set, vne_list[req_no], i
+                    )
+                else:
+                    mutated_child2 = None
+                if mutated_child1 is not None:
+                    mutated_child1.edge_cost = sum(mutated_child1.path_cost)
+                    mutated_child1.total_cost = (
+                        mutated_child1.node_cost + mutated_child1.edge_cost
+                    )
+                    elite_population.append(mutated_child1)
+                    population_set.add(get_hashable_map(mutated_child1))
+                    mutated_child1.fitness = get_fitness(
+                        mutated_child1, vne_list[req_no]
+                    )
+                    logging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
+                if mutated_child2 is not None:
+                    mutated_child2.edge_cost = sum(mutated_child2.path_cost)
+                    mutated_child2.total_cost = (
+                        mutated_child2.node_cost + mutated_child2.edge_cost
+                    )
+                    elite_population.append(mutated_child2)
+                    population_set.add(get_hashable_map(mutated_child2))
+                    mutated_child2.fitness = get_fitness(
+                        mutated_child2, vne_list[req_no]
+                    )
+                    logging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
             logging.info(f"")
             logging.info(f"\t\t\telite population after iteration {_}")

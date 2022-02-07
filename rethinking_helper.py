@@ -202,37 +202,22 @@ def elastic_crossover(
 
 
 def mutate(
-    child1, child2, substrate, population_set, virtual, itr
+    child, substrate, population_set, virtual, itr
 ):  # itr is inside loop number
-    random_no = random.randint(0, len(child1.edge_map) - 1)
-    sel_path = child1.edge_map[random_no]
+    random_no = random.randint(0, len(child.edge_map) - 1)
+    sel_path = child.edge_map[random_no]
     edge = (str(sel_path[0]), str(sel_path[1]))
-    child1.edge_map[random_no] = substrate.findPathFromSrcToDst(
-        edge[0], edge[1], child1.edge_weight[random_no]
+    child.edge_map[random_no] = substrate.findPathFromSrcToDst(
+        edge[0], edge[1], child.edge_weight[random_no]
     )
-    random_no = random.randint(0, len(child2.edge_map) - 1)
-    sel_path = child2.edge_map[random_no]
-    edge = (str(sel_path[0]), str(sel_path[1]))
-    child2.edge_map[random_no] = substrate.findPathFromSrcToDst(
-        edge[0], edge[1], child2.edge_weight[random_no]
-    )
-    if not check_compatibility(child1, copy.deepcopy(substrate), virtual):
-        child1 = None
-        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
-    if not check_compatibility(child2, copy.deepcopy(substrate), virtual):
-        child2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
-    if child1 is not None and get_hashable_map(child1) in population_set:
-        logging.warning(f"\t\t{itr}-Could not get distict child1")
-        child1 = None
-    if (
-        child2 is not None
-        and get_hashable_map(child2) in population_set
-        and child2 is not None
-    ):
-        logging.warning(f"\t\t{itr}-could not get distict child2")
-        child2 = None
-    return child1, child2
+    child.path_cost[random_no] = len(child.edge_map[random_no])*child.edge_weight[random_no]
+    if not check_compatibility(child, copy.deepcopy(substrate), virtual):
+        child = None
+        logging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
+    if child is not None and get_hashable_map(child) in population_set:
+        logging.warning(f"\t\t{itr}-Could not get distict mutated_child")
+        child = None
+    return child
 
 
 def get_hashable_map(chromosome):
