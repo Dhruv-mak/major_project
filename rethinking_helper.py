@@ -169,7 +169,7 @@ def tournament_selection(elite_population, vne_list, req_no):
 def elastic_crossover(
     parent1, parent2, population_set, substrate, virtual, itr
 ):  # itr is inside loop number
-    if len(parent1.edge_map) == 1:
+    if len(parent1.edge_map) <= 1:
         return None, None
     maxx = len(parent1.edge_map)
     parent2_copy = copy.deepcopy(parent2)
@@ -258,9 +258,8 @@ def substract_from_substrate(substrate, virtual, selected_map):
         substrate.node_weights[node] -= virtual.node_weights[i]
     for i, path in enumerate(selected_map.edge_map):
         for j in range(1, len(path)):
-            substrate.edge_weights[
-                (str(path[j - 1]), str(path[j]))
-            ] -= selected_map.edge_weight[i]
+            substrate.edge_weights[(str(path[j - 1]), str(path[j]))] -= selected_map.edge_weight[i]
+            substrate.edge_weights[(str(path[j]), str(path[j-1]))] -= selected_map.edge_weight[i]
 
 
 def get_fitness(chromosome, virtual):
