@@ -65,7 +65,7 @@ def main():
         # [[PATH for edge 1], [PATH for edge 2]]
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
-        if population == []:
+        if population is None:
             logging.warning(f"\t\tinitial population can't be generated for {req_no}")
             continue
         population_set = set()

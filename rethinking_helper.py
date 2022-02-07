@@ -261,6 +261,9 @@ def substract_from_substrate(substrate, virtual, selected_map):
             substrate.edge_weights[
                 (str(path[j - 1]), str(path[j]))
             ] -= selected_map.edge_weight[i]
+            substrate.edge_weights[
+                (str(path[j]), str(path[j-1 ]))
+            ] -= selected_map.edge_weight[i]
 
 
 def get_fitness(chromosome, virtual):
