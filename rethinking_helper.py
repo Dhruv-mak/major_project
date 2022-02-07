@@ -48,7 +48,7 @@ def node_map(substrate, virtual, req_no):
             if (
                 substrate.node_weights[snode] >= virtual.node_weights[vnode]
                 and snode not in assigned_nodes
-                and check_location(substrate, virtual, snode, vnode, 100)
+                and check_location(substrate, virtual, snode, vnode, 100) # pass radius here
             ):
                 map[vnode] = snode
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
@@ -172,6 +172,9 @@ def elastic_crossover(
     if len(parent1.edge_map) == 1:
         return None, None
     maxx = len(parent1.edge_map)
+    maxx = int(0.75*(maxx))
+    if maxx <= 1:
+        return None, None
     parent2_copy = copy.deepcopy(parent2)
     parent1_copy = copy.deepcopy(parent1)
     parent1_pos = random.sample(
@@ -206,7 +209,7 @@ def mutate(
 ):  # itr is inside loop number
     random_no = random.randint(0, len(child.edge_map) - 1)
     sel_path = child.edge_map[random_no]
-    edge = (str(sel_path[0]), str(sel_path[1]))
+    edge = (str(sel_path[0]), str(sel_path[-1]))
     child.edge_map[random_no] = substrate.findPathFromSrcToDst(
         edge[0], edge[1], child.edge_weight[random_no]
     )
@@ -269,7 +272,10 @@ def substract_from_substrate(substrate, virtual, selected_map):
 def get_fitness(chromosome, virtual):
     hop_count = 0
     delay_sum = 0
+    wp = 1
+    wh = 1
+    wc = 1
     for i in range(len(virtual.edges) // 2):
         hop_count += len(chromosome.edge_map[i])
         delay_sum += hop_count - 1
-    return (1 / chromosome.total_cost) + (1 / hop_count) + (1 / delay_sum)
+    return (1 / chromosome.total_cost)* wc + (1 / hop_count)*wh + (1 / delay_sum)*wp
