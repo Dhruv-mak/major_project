@@ -104,17 +104,26 @@ def selectPaths(
 
     # return None
 
+
 def select_random_path(req_map, vne_list, req_no, all_paths, substrate):
     population = []
+    population_set = set()
     curr_pop = 0
-    while curr_pop < 8:
+    counter = 0
+    while curr_pop < 8 and counter < 1000:
         curr_map = temp_map(vne_list, req_no, req_map.node_map)
-        for i in range(len(vne_list[req_no].edges)//2):
+        for i in range(len(vne_list[req_no].edges) // 2):
             curr_map.edge_map.append(random.choice(all_paths[i]))
-        if check_compatibility(curr_map, copy.deepcopy(substrate), vne_list[req_no]):
+        if (
+            check_compatibility(curr_map, copy.deepcopy(substrate), vne_list[req_no])
+            and get_hashable_map(curr_map) not in population_set
+        ):
             curr_pop += 1
             population.append(curr_map)
+            population_set.add(get_hashable_map(curr_map))
+        counter += 1
     return population
+
 
 def edge_map(substrate, virtual, req_no, req_map, vne_list):
     substrate_copy = copy.deepcopy(substrate)
@@ -133,8 +142,10 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             if paths == []:
                 return None
             all_paths.append(paths)
-    initial_population = select_random_path(req_map, vne_list, req_no, all_paths, substrate_copy)
-  
+    initial_population = select_random_path(
+        req_map, vne_list, req_no, all_paths, substrate_copy
+    )
+
     return initial_population
 
 
@@ -155,7 +166,9 @@ def tournament_selection(elite_population, vne_list, req_no):
     return parent1, parent2
 
 
-def elastic_crossover(parent1, parent2, population_set, substrate, virtual, itr):   #itr is inside loop number
+def elastic_crossover(
+    parent1, parent2, population_set, substrate, virtual, itr
+):  # itr is inside loop number
     if len(parent1.edge_map) == 1:
         return None, None
     maxx = len(parent1.edge_map)
@@ -164,13 +177,15 @@ def elastic_crossover(parent1, parent2, population_set, substrate, virtual, itr)
     parent1_pos = random.sample(
         range(len(parent1.edge_map)), random.randint(1, maxx - 1)
     )
-    for i in range(len(parent1_pos)):
-        parent1.edge_map[parent1_pos[i]] = parent2_copy.edge_map[parent1_pos[i]]
+    for i in parent1_pos:
+        parent1.edge_map[i] = parent2_copy.edge_map[i]
+        parent1.path_cost[i] = parent2_copy.path_cost[i]
     parent2_pos = random.sample(
         range(len(parent1.edge_map)), random.randint(1, maxx - 1)
     )
-    for i in range(len(parent2_pos)):
-        parent2.edge_map[parent2_pos[i]] = parent1_copy.edge_map[parent2_pos[i]]
+    for i in parent2_pos:
+        parent2.edge_map[i] = parent1_copy.edge_map[i]
+        parent2.path_cost[i] = parent2_copy.path_cost[i]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
         parent1 = None
         logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
@@ -180,14 +195,16 @@ def elastic_crossover(parent1, parent2, population_set, substrate, virtual, itr)
     if parent1 is not None and get_hashable_map(parent1) in population_set:
         logging.warning(f"\t\t{itr}-Could not get distict child1")
         parent1 = None
-    if parent1 is not None and get_hashable_map(parent1) in population_set:
+    if parent2 is not None and get_hashable_map(parent2) in population_set:
         logging.warning(f"\t\t{itr}-could not get distict child2")
         parent2 = None
     return parent1, parent2
 
 
-def mutate(child1, child2, substrate, population_set, virtual, itr):    #itr is inside loop number
-    random_no = random.randint(0, len(child1.edge_map) -  1)
+def mutate(
+    child1, child2, substrate, population_set, virtual, itr
+):  # itr is inside loop number
+    random_no = random.randint(0, len(child1.edge_map) - 1)
     sel_path = child1.edge_map[random_no]
     edge = (str(sel_path[0]), str(sel_path[1]))
     child1.edge_map[random_no] = substrate.findPathFromSrcToDst(
@@ -229,13 +246,18 @@ def check_compatibility(chromosome, substrate_copy, virtual):
     for i, path in enumerate(chromosome.edge_map):
         for j in range(1, len(path)):
             edge = (str(path[j - 1]), str(path[j]))
-            if substrate_copy.edge_weights[edge] < virtual.edge_weights[virtual.edges[i]]:
+            if (
+                substrate_copy.edge_weights[edge]
+                < virtual.edge_weights[virtual.edges[i]]
+            ):
                 return False
     return True
 
 
 def import_elite(population):
-    population = sorted(population, key=lambda x: x.fitness, reverse=True)[:8]
+    population = sorted(population, key=lambda x: x.fitness, reverse=True)
+    if len(population) > 8:
+        population = population[:8]
     population_set = set()
     for i in population:
         population_set.add(get_hashable_map(i))
