@@ -14,7 +14,7 @@ class Extract:
             os.path.dirname(current),
             "P3_ALIB_MASTER",
             "input",
-            "KK_Aarnet.pickle",
+            "senario_RedBestel.pickle",
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
@@ -38,8 +38,8 @@ def for_automate(req_no = 5):
 
 if __name__ == "__main__":
     x = Extract()
-    # substrate, vne_list = x.get_graphs(req_no = 15)    # USE THIS STATEMENT FOR AUTOMATION & comment line no 42
-    substrate, vne_list = x.get_graphs()
+    substrate, vne_list = x.get_graphs(req_no = 100)    # USE THIS STATEMENT FOR AUTOMATION & comment line no 42
+    # substrate, vne_list = x.get_graphs()
     output = {"substrate": substrate, "vne_list" : vne_list}
     pickle_file = open("input.pickle", "wb")
     pickle.dump(output, pickle_file)

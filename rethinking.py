@@ -1,4 +1,3 @@
-from re import X
 import helper
 import copy
 from datetime import datetime, date
@@ -6,11 +5,11 @@ import logging
 import random
 from rethinking_helper import *
 
-# global log3
 log3 = logging.getLogger('log3')
+
 def main():
     substrate, vne_list = helper.read_pickle()
-    # logging.basicConfig(filename="rethinking.log", filemode="w", level=#log3.info)
+    # logging.basicConfig(filename="rethinking.log", filemode="w", level=logging.INFO)
     #log3.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     #log3.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
     temp = []
@@ -35,7 +34,7 @@ def main():
         # if vnr == len(vne_list) - 1:
         #     #log3.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}\n\n")
         # else:
-            #log3.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
+        #     #log3.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
 
     start_time = datetime.now().time()
     accepted = 0
@@ -113,32 +112,40 @@ def main():
                     population_set.add(get_hashable_map(child2))
                     child2.fitness = get_fitness(child2, vne_list[req_no])
                     #log3.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
-                if child1 is not None and child2 is not None:
-                    mutated_child1, mutated_child2 = mutate(
-                        child1, child2, substrate, population_set, vne_list[req_no], i
+                if child1 is not None:
+                    mutated_child1 = mutate(
+                        child1, substrate, population_set, vne_list[req_no], i
                     ) # last argument i is for identify which inside loop
-                    if mutated_child1 is not None:
-                        mutated_child1.edge_cost = sum(mutated_child1.path_cost)
-                        mutated_child1.total_cost = (
-                            mutated_child1.node_cost + mutated_child1.edge_cost
-                        )
-                        elite_population.append(mutated_child1)
-                        population_set.add(get_hashable_map(mutated_child1))
-                        mutated_child1.fitness = get_fitness(
-                            mutated_child1, vne_list[req_no]
-                        )
-                        #log3.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
-                    if mutated_child2 is not None:
-                        mutated_child2.edge_cost = sum(mutated_child2.path_cost)
-                        mutated_child2.total_cost = (
-                            mutated_child2.node_cost + mutated_child2.edge_cost
-                        )
-                        elite_population.append(mutated_child2)
-                        population_set.add(get_hashable_map(mutated_child2))
-                        mutated_child2.fitness = get_fitness(
-                            mutated_child2, vne_list[req_no]
-                        )
-                        #log3.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
+                else:
+                    mutated_child1 = None
+                if child2 is not None:
+                    mutated_child2 = mutate(
+                        child2, substrate, population_set, vne_list[req_no], i
+                    )
+                else:
+                    mutated_child2 = None
+                if mutated_child1 is not None:
+                    mutated_child1.edge_cost = sum(mutated_child1.path_cost)
+                    mutated_child1.total_cost = (
+                        mutated_child1.node_cost + mutated_child1.edge_cost
+                    )
+                    elite_population.append(mutated_child1)
+                    population_set.add(get_hashable_map(mutated_child1))
+                    mutated_child1.fitness = get_fitness(
+                        mutated_child1, vne_list[req_no]
+                    )
+                    #log3.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
+                if mutated_child2 is not None:
+                    mutated_child2.edge_cost = sum(mutated_child2.path_cost)
+                    mutated_child2.total_cost = (
+                        mutated_child2.node_cost + mutated_child2.edge_cost
+                    )
+                    elite_population.append(mutated_child2)
+                    population_set.add(get_hashable_map(mutated_child2))
+                    mutated_child2.fitness = get_fitness(
+                        mutated_child2, vne_list[req_no]
+                    )
+                    #log3.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
             #log3.info(f"")
             #log3.info(f"\t\t\telite population after iteration {_}")
@@ -194,17 +201,13 @@ def main():
     )
 
     end_time = datetime.now().time()
-    duration = datetime.combine(date.min, end_time) - datetime.combine(
-        date.min, start_time
-    )
+    duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)
 
-    print(f"\n\n\tRETHINKING\nThe revenue is {revenue} and total cost is {tot_cost}")
+    print(f"\n\nRETHINKING\nThe revenue is {revenue} and total cost is {tot_cost}")
     print(f"Total number of requests embedded is {accepted} out of {len(vne_list)}")
     print(f"Embedding ratio is {accepted/len(vne_list)}")
     print(f"Availabe substrate resources before mapping is {pre_resource}")
-    print(
-        f"Consumed substrate resources after mapping is {pre_resource - post_resource}"
-    )
+    print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
     print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
     print(f"Average node utilization {no_cost/pre_resource_nodecost}")
     print(f"Average execution time {duration/len(vne_list)}")
@@ -220,19 +223,19 @@ def main():
         temp.append((edge, substrate.edge_weights[edge]))
     #log3.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")
 
-    # log3.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
+    #log3.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     if tot_cost == 0:
-        # log3.error(f"\t\tCouldn't embedd any request")
+        #log3.error(f"\t\tCouldn't embedd any request")
         return None
 
     # log3.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
-    # log3.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
-    # log3.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
-    # log3.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
-    # log3.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
-    # log3.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
-    # log3.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
-    # log3.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
+    #log3.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
+    #log3.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
+    #log3.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    #log3.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
+    #log3.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
+    #log3.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
+    #log3.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
     # logging.shutdown()
     output_dict = {
         "revenue": revenue,
