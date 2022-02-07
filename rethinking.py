@@ -5,36 +5,35 @@ import logging
 import random
 from rethinking_helper import *
 
-log3 = logging.getLogger('log3')
 
 def main():
     substrate, vne_list = helper.read_pickle()
-    # logging.basicConfig(filename="rethinking.log", filemode="w", level=logging.INFO)
-    #log3.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
-    #log3.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
+    #loggging.basicConfig(filename="rethinking.log", filemode="w", level=#loggging.INFO)
+    #loggging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
+    #loggging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
     temp = []
     for node in range(substrate.nodes):
         temp.append((node, substrate.node_weights[node]))
-    #log3.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    #loggging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
     temp = []
     for edge in substrate.edges:
         temp.append((edge, substrate.edge_weights[edge]))
-    #log3.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n\t\t\t\t\t\tVIRTUAL NETWORK")
+    #loggging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n\t\t\t\t\t\tVIRTUAL NETWORK")
 
-    #log3.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
+    #loggging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
     for vnr in range(len(vne_list)):
-        #log3.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
+        #loggging.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
         temp = []
         for node in range(vne_list[vnr].nodes):
             temp.append((node, vne_list[vnr].node_weights[node]))
-        #log3.info(f"\t\tNodes of the VNR-{vnr} with weight are : {temp}")
+        #loggging.info(f"\t\tNodes of the VNR-{vnr} with weight are : {temp}")
         temp = []
         for edge in vne_list[vnr].edges:
             temp.append((edge, vne_list[vnr].edge_weights[edge]))
         # if vnr == len(vne_list) - 1:
-        #     #log3.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}\n\n")
+        #     #loggging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}\n\n")
         # else:
-        #     #log3.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
+        #     #loggging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
 
     start_time = datetime.now().time()
     accepted = 0
@@ -53,14 +52,16 @@ def main():
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is None:
-            #log3.warning(f"\tNode mapping not possible for req no {req_no}\n")
+            #loggging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
         # [[PATH for edge 1], [PATH for edge 2]]
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
         if population is None:
-            #log3.warning(f"\t\tinitial population can't be generated for {req_no}")
+            #loggging.warning(f"\t\tinitial population can't be generated for {req_no}")
+            continue
+        if len(population) == 0:
             continue
         population_set = set()
         for i in population:
@@ -82,13 +83,13 @@ def main():
             abhi_map.fitness = get_fitness(abhi_map, vne_list[req_no])
             initial_population.append(abhi_map)
             population_set.add(get_hashable_map(abhi_map))
-        #log3.info(f"\t\tInitial_population for req no: {req_no}::::")
+        #loggging.info(f"\t\tInitial_population for req no: {req_no}::::")
         # for i in initial_population:
-            #log3.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\t tot_cost: {i.total_cost}")
-        #log3.info(f"\n\n")
+            #loggging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\t tot_cost: {i.total_cost}")
+        #loggging.info(f"\n\n")
         elite_population = copy.deepcopy(initial_population)
         for _ in range(8):
-            #log3.info(f"\t\t\t\t ITERATION {_}")
+            #loggging.info(f"\t\t\t\t ITERATION {_}")
             i = 0
             while i < 8:
                 i += 1
@@ -104,14 +105,14 @@ def main():
                     elite_population.append(child1)
                     population_set.add(get_hashable_map(child1))
                     child1.fitness = get_fitness(child1, vne_list[req_no])
-                    #log3.info(f"\t\t\t{i}-Added Crossovered Child1 {child1.edge_map}\tfitness: {child1.fitness:.4f}\ttot_cost: {child1.total_cost}")
+                    #loggging.info(f"\t\t\t{i}-Added Crossovered Child1 {child1.edge_map}\tfitness: {child1.fitness:.4f}\ttot_cost: {child1.total_cost}")
                 if child2 is not None:
                     child2.edge_cost = sum(child2.path_cost)
                     child2.total_cost = child2.node_cost + child2.edge_cost
                     elite_population.append(child2)
                     population_set.add(get_hashable_map(child2))
                     child2.fitness = get_fitness(child2, vne_list[req_no])
-                    #log3.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
+                    #loggging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
                 if child1 is not None:
                     mutated_child1 = mutate(
                         child1, substrate, population_set, vne_list[req_no], i
@@ -134,7 +135,7 @@ def main():
                     mutated_child1.fitness = get_fitness(
                         mutated_child1, vne_list[req_no]
                     )
-                    #log3.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
+                    #loggging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
                 if mutated_child2 is not None:
                     mutated_child2.edge_cost = sum(mutated_child2.path_cost)
                     mutated_child2.total_cost = (
@@ -145,49 +146,49 @@ def main():
                     mutated_child2.fitness = get_fitness(
                         mutated_child2, vne_list[req_no]
                     )
-                    #log3.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
+                    #loggging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
-            #log3.info(f"")
-            #log3.info(f"\t\t\telite population after iteration {_}")
+            #loggging.info(f"")
+            #loggging.info(f"\t\t\telite population after iteration {_}")
             # for i in initial_population:
-                #log3.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
-            #log3.info(f"")
+                #loggging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
+            #loggging.info(f"")
         selected_map = get_best_map(elite_population)
         
-        #log3.info(f"\n")
+        #loggging.info(f"\n")
         ls = dict()
         c =0
         for ed in selected_map.edges:
             ls[ed] = selected_map.edge_map[c]
             c += 1
-        #log3.info(f"\t\tThe selected chromosome for VNR {req_no} is {selected_map.edge_map}\tfitness: {selected_map.fitness:.4f}\ttot_cost: {selected_map.total_cost}")
-        #log3.info(f"\t\tThe node map of VNR {req_no} is {selected_map.node_map}")
-        #log3.info(f"\t\tThe edge map of VNR {req_no} is {ls}")
+        #loggging.info(f"\t\tThe selected chromosome for VNR {req_no} is {selected_map.edge_map}\tfitness: {selected_map.fitness:.4f}\ttot_cost: {selected_map.total_cost}")
+        #loggging.info(f"\t\tThe node map of VNR {req_no} is {selected_map.node_map}")
+        #loggging.info(f"\t\tThe edge map of VNR {req_no} is {ls}")
         
         sub_wt = []
         for node in range(substrate.nodes):
             sub_wt.append((node, substrate.node_weights[node]))
-        #log3.info(f"\t\tSubstrate node before mapping VNR-{req_no} is {sub_wt}")
+        #loggging.info(f"\t\tSubstrate node before mapping VNR-{req_no} is {sub_wt}")
         sub_wt = []
         for edge in substrate.edges:
             sub_wt.append((edge, substrate.edge_weights[edge]))
-        #log3.info(f"\t\tSubstrate edge before mapping VNR-{req_no} is {sub_wt}")
+        #loggging.info(f"\t\tSubstrate edge before mapping VNR-{req_no} is {sub_wt}")
 
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
         
         sub_wt = []
         for node in range(substrate.nodes):
             sub_wt.append((node, substrate.node_weights[node]))
-        #log3.info(f"\t\tSubstrate after mapping VNR-{req_no} is {sub_wt}")
+        #loggging.info(f"\t\tSubstrate after mapping VNR-{req_no} is {sub_wt}")
         sub_wt = []
         for edge in substrate.edges:
             sub_wt.append((edge, substrate.edge_weights[edge]))
-        #log3.info(f"\t\tSubstrate edge after mapping VNR-{req_no} is {sub_wt}")
+        #loggging.info(f"\t\tSubstrate edge after mapping VNR-{req_no} is {sub_wt}")
 
         accepted += 1
         curr_map[req_no] = selected_map
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
-        #log3.info(f"\n\n")
+        #loggging.info(f"\n\n")
 
     ed_cost = 0
     no_cost = 0
@@ -201,42 +202,46 @@ def main():
     )
 
     end_time = datetime.now().time()
-    duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)
+    duration = datetime.combine(date.min, end_time) - datetime.combine(
+        date.min, start_time
+    )
 
-    print(f"\n\nRETHINKING\nThe revenue is {revenue} and total cost is {tot_cost}")
+    print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
     print(f"Total number of requests embedded is {accepted} out of {len(vne_list)}")
     print(f"Embedding ratio is {accepted/len(vne_list)}")
     print(f"Availabe substrate resources before mapping is {pre_resource}")
     print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
     print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
     print(f"Average node utilization {no_cost/pre_resource_nodecost}")
+    print(f"Total execution time {duration}")
     print(f"Average execution time {duration/len(vne_list)}")
 
-    #log3.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
-    #log3.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
+    #loggging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
+    #loggging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
     temp = []
     for node in range(substrate.nodes):
         temp.append((node, substrate.node_weights[node]))
-    #log3.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    #loggging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
     temp = []
     for edge in substrate.edges:
         temp.append((edge, substrate.edge_weights[edge]))
-    #log3.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")
+    #loggging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")
 
-    #log3.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
+    #loggging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     if tot_cost == 0:
-        #log3.error(f"\t\tCouldn't embedd any request")
-        return None
+        #loggging.error(f"\t\tCouldn't embedd any request")
+        print(f"couldn't embed any request")
+        return
 
-    # log3.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
-    #log3.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
-    #log3.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
-    #log3.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
-    #log3.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
-    #log3.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
-    #log3.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
-    #log3.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
-    # logging.shutdown()
+    #loggging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
+    #loggging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
+    #loggging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
+    #loggging.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    #loggging.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
+    #loggging.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
+    #loggging.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
+    #loggging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
+    # #loggging.shutdown()
     output_dict = {
         "revenue": revenue,
         "total_cost": tot_cost,
@@ -252,5 +257,4 @@ def main():
 
 
 if __name__ == "__main__":
-    helper.setup_logger('log3','rethinking.log')
     main()

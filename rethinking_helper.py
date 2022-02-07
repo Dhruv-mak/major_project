@@ -6,7 +6,6 @@ import logging
 
 x = False
 
-log3 = logging.getLogger('log3')
 
 class temp_map:
     def __init__(self, vne_list, req_no, map=[]) -> None:
@@ -49,7 +48,7 @@ def node_map(substrate, virtual, req_no):
             if (
                 substrate.node_weights[snode] >= virtual.node_weights[vnode]
                 and snode not in assigned_nodes
-                and check_location(substrate, virtual, snode, vnode, 100)
+                and check_location(substrate, virtual, snode, vnode, 100) # pass radius here
             ):
                 map[vnode] = snode
                 substrate.node_weights[snode] -= virtual.node_weights[vnode]
@@ -142,6 +141,10 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
             # print(paths)
             if paths == []:
                 return None
+            if paths is None:
+                return None
+            if len(paths) == 0:
+                return None
             all_paths.append(paths)
     initial_population = select_random_path(
         req_map, vne_list, req_no, all_paths, substrate_copy
@@ -173,6 +176,9 @@ def elastic_crossover(
     if len(parent1.edge_map) <= 1:
         return None, None
     maxx = len(parent1.edge_map)
+    maxx = int(0.75*(maxx))
+    if maxx <= 1:
+        return None, None
     parent2_copy = copy.deepcopy(parent2)
     parent1_copy = copy.deepcopy(parent1)
     parent1_pos = random.sample(
@@ -189,15 +195,15 @@ def elastic_crossover(
         parent2.path_cost[i] = parent2_copy.path_cost[i]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
         parent1 = None
-        #log3.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
+        #loggging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
     if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
         parent2 = None
-        #log3.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
+        #loggging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
     if parent1 is not None and get_hashable_map(parent1) in population_set:
-        #log3.warning(f"\t\t{itr}-Could not get distict child1")
+        #loggging.warning(f"\t\t{itr}-Could not get distict child1")
         parent1 = None
     if parent2 is not None and get_hashable_map(parent2) in population_set:
-        #log3.warning(f"\t\t{itr}-could not get distict child2")
+        #loggging.warning(f"\t\t{itr}-could not get distict child2")
         parent2 = None
     return parent1, parent2
 
@@ -207,16 +213,16 @@ def mutate(
 ):  # itr is inside loop number
     random_no = random.randint(0, len(child.edge_map) - 1)
     sel_path = child.edge_map[random_no]
-    edge = (str(sel_path[0]), str(sel_path[1]))
+    edge = (str(sel_path[0]), str(sel_path[-1]))
     child.edge_map[random_no] = substrate.findPathFromSrcToDst(
         edge[0], edge[1], child.edge_weight[random_no]
     )
     child.path_cost[random_no] = len(child.edge_map[random_no])*child.edge_weight[random_no]
     if not check_compatibility(child, copy.deepcopy(substrate), virtual):
         child = None
-        #log3.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
+        #loggging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
     if child is not None and get_hashable_map(child) in population_set:
-        #log3.warning(f"\t\t{itr}-Could not get distict mutated_child")
+        #loggging.warning(f"\t\t{itr}-Could not get distict mutated_child")
         child = None
     return child
 
@@ -251,6 +257,7 @@ def import_elite(population):
 
 
 def get_best_map(population):
+    i = 6
     return sorted(population, key=lambda x: x.fitness, reverse=True)[0]
 
 
@@ -270,7 +277,10 @@ def substract_from_substrate(substrate, virtual, selected_map):
 def get_fitness(chromosome, virtual):
     hop_count = 0
     delay_sum = 0
+    wp = 1
+    wh = 1
+    wc = 1
     for i in range(len(virtual.edges) // 2):
         hop_count += len(chromosome.edge_map[i])
         delay_sum += hop_count - 1
-    return (1 / chromosome.total_cost) + (1 / hop_count) + (1 / delay_sum)
+    return (1 / chromosome.total_cost)* wc + (1 / hop_count)*wh + (1 / delay_sum)*wp

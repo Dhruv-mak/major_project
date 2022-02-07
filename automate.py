@@ -4,6 +4,7 @@ from greedy import main as greedy
 from rethinking import main as rethinking
 from graph_extraction import for_automate
 import logging
+from datetime import datetime,date
 
 
 def setup_logger(logger_name, log_file, level=logging.INFO):
@@ -35,17 +36,23 @@ output_dict = {
         "avg_exec": [],
     }
 
-rev_cnt=0
-rct_cnt=0
-acc_cnt=0
-exec_cnt=0
+g_rev_cnt=0
+g_rct_cnt=0
+g_acc_cnt=0
+g_exec_cnt=0
+r_rev_cnt=0
+r_rct_cnt=0
+r_acc_cnt=0
+r_exec_cnt=0
 tot=0
-for req_no in range(5, 56, 5):
+
+start_time = datetime.now().time()
+for req_no in range(5, 51, 5):
     tot += 1
     for_automate(req_no)
-    setup_logger('log1','vikor.log')
-    setup_logger('log2','greedy.log')
-    setup_logger('log3','rethinking.log')
+    # setup_logger('log1','vikor.log')
+    # setup_logger('log2','greedy.log')
+    # setup_logger('log3','rethinking.log')
     gred_out = greedy()
     print(f"greedy done for req no {req_no}")
     vikor_out = vikor()
@@ -113,16 +120,24 @@ for req_no in range(5, 56, 5):
 
 
     if vikor_out['revenue']>gred_out['revenue']:
-        rev_cnt += 1
+        g_rev_cnt += 1
     
     if (vikor_out['revenue']/vikor_out['total_cost'])*100 >(gred_out['revenue']/gred_out['total_cost'])*100:
-        rct_cnt += 1
-    
+        g_rct_cnt += 1 
     if vikor_out['accepted']>gred_out['accepted']:
-        acc_cnt += 1
-  
+        g_acc_cnt += 1
     if vikor_out['avg_exec']<gred_out['avg_exec']:
-        exec_cnt += 1
+        g_exec_cnt += 1
+
+
+    if vikor_out['revenue']>rethink_out['revenue']:
+        r_rev_cnt += 1
+    if (vikor_out['revenue']/vikor_out['total_cost'])*100 >(rethink_out['revenue']/rethink_out['total_cost'])*100:
+        r_rct_cnt += 1
+    if vikor_out['accepted']>rethink_out['accepted']:
+        r_acc_cnt += 1
+    if vikor_out['avg_exec']<rethink_out['avg_exec']:
+        r_exec_cnt += 1
     
     output_dict["algorithm"].append('')
     output_dict["revenue"].append('')
@@ -139,18 +154,36 @@ for req_no in range(5, 56, 5):
     output_dict["avg_exec"].append('')
 
 output_dict["algorithm"].append(tot)
-output_dict["revenue"].append(rev_cnt)
+output_dict["revenue"].append(g_rev_cnt)
 output_dict["total_cost"].append('')
-output_dict["revenuetocostratio"].append(rct_cnt)
-output_dict["accepted"].append(acc_cnt)
+output_dict["revenuetocostratio"].append(g_rct_cnt)
+output_dict["accepted"].append(g_acc_cnt)
 output_dict["total_request"].append('')
-output_dict["embeddingratio"].append(acc_cnt)
+output_dict["embeddingratio"].append(g_acc_cnt)
 output_dict["pre_resource"].append('')
 output_dict["post_resource"].append('')
 output_dict["consumed"].append('')
 output_dict["avg_link"].append('')
 output_dict["avg_node"].append('')
-output_dict["avg_exec"].append(exec_cnt)
+output_dict["avg_exec"].append(g_exec_cnt)
 
+output_dict["algorithm"].append(tot)
+output_dict["revenue"].append(r_rev_cnt)
+output_dict["total_cost"].append('')
+output_dict["revenuetocostratio"].append(r_rct_cnt)
+output_dict["accepted"].append(r_acc_cnt)
+output_dict["total_request"].append('')
+output_dict["embeddingratio"].append(r_acc_cnt)
+output_dict["pre_resource"].append('')
+output_dict["post_resource"].append('')
+output_dict["consumed"].append('')
+output_dict["avg_link"].append('')
+output_dict["avg_node"].append('')
+output_dict["avg_exec"].append(r_exec_cnt)
+
+end_time = datetime.now().time()
+duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)
+
+print(f"total execution time {duration}")
 excel = pd.DataFrame(output_dict)
 excel.to_excel("test.xlsx")
