@@ -20,7 +20,8 @@ def main():
     index_chromosome, bracket, revenue = get_index(vne_list)
     population = set()
     population, population_set = initialize_population(substrate, vne_list, index_chromosome)
-     
+    if population is None :
+        return  
     
     print("The node mappings are:")
     logging.info("\t\tThe initial node mappings are:")

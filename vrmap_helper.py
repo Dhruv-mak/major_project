@@ -55,7 +55,8 @@ def initialize_population(substrate, vne_list, index_chromosome):
                     some_map = map
         if itr>10000:
             print(f"Don't have enough populations required 8 got {p}")
-            return
+            logging.error(f"\t\tDon't have enough populations required 8 got {p}")
+            return None, None
     return population, population_set
 
 
