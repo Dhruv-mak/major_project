@@ -60,11 +60,13 @@ def main():
         if req_map is None:
             logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
+        else:
+            logging.info(f"\t Node embedding is done for {req_no}:::{req_map}")
         req_map = temp_map(vne_list, req_no, req_map)
         # [[PATH for edge 1], [PATH for edge 2]]
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
-        if population is None:
+        if population is None or len(population) == 0:
             logging.warning(f"\t\tinitial population can't be generated for {req_no}")
             continue
         population_set = set()
