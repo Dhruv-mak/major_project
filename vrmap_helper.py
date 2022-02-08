@@ -1,12 +1,20 @@
 import random
 import sys
 import copy
+import logging
+
 def get_index(vne_list):
+    bracket = []
+    bracket.append(0)
+    revenue = 0
     index_chromosome = list()
     for i in range(len(vne_list)):
         for j in range(vne_list[i].nodes):
             index_chromosome.append(Gene(i, j, vne_list))
-    return index_chromosome
+        bracket.append(bracket[-1]+vne_list[i].nodes)
+        revenue += sum(vne_list[i].node_weights.values())
+        revenue += sum(vne_list[i].edge_weights.values())//2 
+    return index_chromosome, bracket, revenue
 
 def tounament_selection(elite_population, vne_list):
     random.shuffle(elite_population)
@@ -139,6 +147,19 @@ def improved_crossover(parent1, parent2, index_chromosome, substrate, vne_list):
                     return child1, child2
     return parent1, parent2
 
+def substract_from_substrate(substrate, selected_map, index_chromosome, vne_list):
+    for i in range(len(selected_map.node_map)):
+        substrate.node_weights[selected_map.node_map[i]] -= index_chromosome[i].node_weight
+    index = 0
+    for i in range(len(vne_list)):
+        for edge in vne_list[i].edges:
+            if int(edge[0]) < int(edge[1]):
+                weight = vne_list[i].edge_weights[edge]
+                path = selected_map.edge_map[i, edge]
+                for j in range(1, len(path)):
+                    substrate.edge_weights[(path[j - 1], path[j])] -= weight
+                    substrate.edge_weights[(path[j], path[j - 1])] -= weight
+        index += vne_list[i].nodes
 
 class temp_map:
     def __init__(self, vne_list, map=[]) -> None:
@@ -205,3 +226,38 @@ def print_vne(bracket,i):
             string = str(i.node_map[j])
             print(i.node_map[j],end=", ")
     print(") ]",end = " ")
+
+def log_substrate(substrate):
+    logging.info(
+        f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} "
+    )
+    temp = []
+    for node in range(substrate.nodes):
+        temp.append((node, substrate.node_weights[node]))
+    logging.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+    temp = []
+    for edge in substrate.edges:
+        temp.append((edge, substrate.edge_weights[edge]))
+    logging.info(
+        f"\t\tEdges of the substrate network with weight are : {temp}\n\n"
+    )
+
+def log_vnr(vne_list):
+    logging.info(f"\n\t\t\t\t\t\tVIRTUAL NETWORK")
+    logging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
+    for vnr in range(len(vne_list)):
+        logging.info(
+            f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}"
+        )
+        temp = []
+        for node in range(vne_list[vnr].nodes):
+            temp.append((node, vne_list[vnr].node_weights[node]))
+        logging.info(f"\t\tNodes of the VNR-{vnr} with weight are : {temp}")
+        temp = []
+        for edge in vne_list[vnr].edges:
+            temp.append((edge, vne_list[vnr].edge_weights[edge]))
+        if vnr == len(vne_list) - 1:
+            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}\n\n")
+        else:
+            logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
+ 
