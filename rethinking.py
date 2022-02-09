@@ -121,13 +121,13 @@ def main():
                     logging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
                 if child1 is not None:
                     mutated_child1 = mutate(
-                        child1, substrate, population_set, vne_list[req_no], i
+                        copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i
                     ) # last argument i is for identify which inside loop
                 else:
                     mutated_child1 = None
                 if child2 is not None:
                     mutated_child2 = mutate(
-                        child2, substrate, population_set, vne_list[req_no], i
+                        copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i
                     )
                 else:
                     mutated_child2 = None
