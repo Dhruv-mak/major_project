@@ -103,56 +103,16 @@ def main():
                     elite_population, vne_list, req_no
                 )
                 child1, child2 = elastic_crossover(
-                    copy.deepcopy(parent1), copy.deepcopy(parent2), population_set, substrate, vne_list[req_no], i
-                )   # last argument i is for identify which inside loop 
-                if child1 is not None:
-                    child1.fitness = get_fitness(child1, vne_list[req_no])
-                    child1.edge_cost = sum(child1.path_cost)
-                    child1.total_cost = child1.node_cost + child1.edge_cost
-                    elite_population.append(child1)
-                    population_set.add(get_hashable_map(child1))
-                    logging.info(f"\t\t\t{i}-Added Crossovered Child1 {child1.edge_map}\tfitness: {child1.fitness:.4f}\ttot_cost: {child1.total_cost}")
-                if child2 is not None:
-                    child2.fitness = get_fitness(child2, vne_list[req_no])
-                    child2.edge_cost = sum(child2.path_cost)
-                    child2.total_cost = child2.node_cost + child2.edge_cost
-                    elite_population.append(child2)
-                    population_set.add(get_hashable_map(child2))
-                    logging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
-                if child1 is not None:
-                    mutated_child1 = mutate(
-                        copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i
+                    copy.deepcopy(parent1), copy.deepcopy(parent2), population_set, substrate, vne_list[req_no], i, elite_population
+                )   # last argument i is for identify which inside loop
+                if child1 is not None: 
+                    mutate(
+                        copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i, elite_population
                     ) # last argument i is for identify which inside loop
-                else:
-                    mutated_child1 = None
                 if child2 is not None:
-                    mutated_child2 = mutate(
-                        copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i
+                    mutate(
+                        copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i, elite_population
                     )
-                else:
-                    mutated_child2 = None
-                if mutated_child1 is not None:
-                    mutated_child1.edge_cost = sum(mutated_child1.path_cost)
-                    mutated_child1.total_cost = (
-                        mutated_child1.node_cost + mutated_child1.edge_cost
-                    )
-                    mutated_child1.fitness = get_fitness(
-                        mutated_child1, vne_list[req_no]
-                    )
-                    elite_population.append(mutated_child1)
-                    population_set.add(get_hashable_map(mutated_child1))
-                    logging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
-                if mutated_child2 is not None:
-                    mutated_child2.edge_cost = sum(mutated_child2.path_cost)
-                    mutated_child2.total_cost = (
-                        mutated_child2.node_cost + mutated_child2.edge_cost
-                    )
-                    mutated_child2.fitness = get_fitness(
-                        mutated_child2, vne_list[req_no]
-                    )
-                    elite_population.append(mutated_child2)
-                    population_set.add(get_hashable_map(mutated_child2))
-                    logging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
             logging.info(f"")
             logging.info(f"\t\t\telite population after iteration {_}")

@@ -167,7 +167,7 @@ def tournament_selection(elite_population, vne_list, req_no):
 
 
 def elastic_crossover(
-    parent1, parent2, population_set, substrate, virtual, itr
+    parent1, parent2, population_set, substrate, virtual, itr, elite_population
 ):  # itr is inside loop number
     if len(parent1.edge_map) <= 1:
         return None, None
@@ -190,22 +190,37 @@ def elastic_crossover(
         parent2.edge_map[i] = parent1_copy.edge_map[i]
         parent2.path_cost[i] = parent1_copy.path_cost[i]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
-        parent1 = None
+        # parent1 = None
         logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
-    if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
-        parent2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
-    if parent1 is not None and get_hashable_map(parent1) in population_set:
+    elif get_hashable_map(parent1) in population_set:
         logging.warning(f"\t\t{itr}-Could not get distict child1")
-        parent1 = None
-    if parent2 is not None and get_hashable_map(parent2) in population_set:
+        # parent1 = None
+    else:
+        parent1.fitness = get_fitness(parent1, virtual)
+        parent1.edge_cost = sum(parent1.path_cost)
+        parent1.total_cost = parent1.node_cost + parent1.edge_cost
+        elite_population.append(parent1)
+        population_set.add(get_hashable_map(parent1))
+        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent1.edge_map}\tfitness: {parent1.fitness:.4f}\ttot_cost: {parent1.total_cost}")
+
+    if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
+        # parent2 = None
+        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
+    elif get_hashable_map(parent2) in population_set:
         logging.warning(f"\t\t{itr}-could not get distict child2")
-        parent2 = None
+        # parent2 = None
+    else:
+        parent1.fitness = get_fitness(parent1, virtual)
+        parent1.edge_cost = sum(parent1.path_cost)
+        parent1.total_cost = parent1.node_cost + parent1.edge_cost
+        elite_population.append(parent1)
+        population_set.add(get_hashable_map(parent1))
+        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent2.edge_map}\tfitness: {parent2.fitness:.4f}\ttot_cost: {parent2.total_cost}")
     return parent1, parent2
 
 
 def mutate(
-    child, substrate, population_set, virtual, itr
+    child, substrate, population_set, virtual, itr, elite_population
 ):  # itr is inside loop number
     random_no = random.randint(0, len(child.edge_map) - 1)
     sel_path = child.edge_map[random_no]
@@ -217,9 +232,20 @@ def mutate(
     if not check_compatibility(child, copy.deepcopy(substrate), virtual):
         child = None
         logging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
-    if child is not None and get_hashable_map(child) in population_set:
+    elif get_hashable_map(child) in population_set:
         logging.warning(f"\t\t{itr}-Could not get distict mutated_child")
         child = None
+    else:
+        child.edge_cost = sum(child.path_cost)
+        child.total_cost = (
+            child.node_cost + child.edge_cost
+        )
+        child.fitness = get_fitness(
+            child, virtual
+        )
+        elite_population.append(child)
+        population_set.add(get_hashable_map(child))
+        logging.info(f"\t\t\t{itr}-Added Muted Child {child.edge_map}\tfitness: {child.fitness:.4f}\ttot_cost: {child.total_cost}")
     return child
 
 

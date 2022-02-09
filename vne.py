@@ -4,7 +4,7 @@ import graph
 from graph import Parameters
 
 
-def create_vne(min_nodes=2, max_nodes=5, no_requests=2, probability=0.4):
+def create_vne(min_nodes=2, max_nodes=10, no_requests=1000, probability=0.4):
     random_node_list = [
         random.randint(min_nodes, max_nodes) for i in range(no_requests)
     ]
@@ -45,7 +45,7 @@ def create_vne(min_nodes=2, max_nodes=5, no_requests=2, probability=0.4):
         for j in range(nodes):
             for k in new_vne_req[i][j + 1]:
                 edges.add((str(j), str(k - 1)))
-        vne.append(graph.Graph(nodes, edges, Parameters(10, 50, 10, 50, 0, 100, 0, 100, 1, 4)) )  # for vne request
+        vne.append(graph.Graph(nodes, edges, Parameters(1, 10, 1, 10, 0, 100, 0, 100, 1, 4)) )  # for vne request
     return vne
 
 
