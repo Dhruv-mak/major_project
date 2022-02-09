@@ -99,7 +99,7 @@ def main():
             i = 0
             while i < 8:
                 i += 1
-                parent1, parent2 = tournament_selection(
+                parent1, parent2 = tournament_selection( # check it for random selection
                     elite_population, vne_list, req_no
                 )
                 child1, child2 = elastic_crossover(
@@ -169,7 +169,7 @@ def main():
 
         accepted += 1
         curr_map[req_no] = selected_map
-        revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
+        revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2 # revenue calculation
         logging.info(f"\n\n")
 
     ed_cost = 0
@@ -178,7 +178,7 @@ def main():
         ed_cost += request.edge_cost  # total bandwidth for all the mapped requests
         no_cost += request.node_cost  # total crb for all the mapped requests
 
-    tot_cost = ed_cost + no_cost
+    tot_cost = ed_cost + no_cost # total cost calculation
     post_resource = (
         sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values()) // 2
     )

@@ -30,15 +30,15 @@ def main():
         logging.info(f"\t\t{i.node_map}\ttotal cost: {i.total_cost}")
 
     elite_population = copy.deepcopy(population)
-    for _ in range(8):
+    for _ in range(2):
         print("\n\n ITERATION", _)
         logging.info(f"\n\n")
         logging.info(f"\t\tITERATION {_}")
         i=0
-        while i<8:
+        while i<2:
             i += 1
             parent1, parent2 = tounament_selection(elite_population, vne_list)
-            for _ in range(300):
+            for _ in range(2):
                 offspring1, offspring2 = improved_crossover(parent1, parent2, index_chromosome, substrate, vne_list)
                 if offspring1.node_map != parent1.node_map and offspring2.node_map != parent2.node_map:
                     break
@@ -47,7 +47,7 @@ def main():
             random_no = random.random()
             mutation_rate = 0.15
             if random_no < mutation_rate:
-                for l in range(300):
+                for l in range(2):
                     mutated_child1, mutated_child2 = mutate(copy.deepcopy(offspring1), copy.deepcopy(offspring2), substrate, vne_list, index_chromosome)
                     if mutated_child1 is not None and mutated_child2 is not None:
                         break

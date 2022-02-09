@@ -47,7 +47,7 @@ def node_map(substrate, virtual, req_no):
         for snode in sorder:
             if (
                 substrate.node_weights[snode] >= virtual.node_weights[vnode]
-                and snode not in assigned_nodes
+                and snode not in assigned_nodes # constraint for non-repeating node number
                 and check_location(substrate, virtual, snode, vnode, 100) # pass radius here
             ):
                 map[vnode] = snode
@@ -151,18 +151,19 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 
 def tournament_selection(elite_population, vne_list, req_no):
     random.shuffle(elite_population)
-    sz = len(elite_population) // 2
-    group1 = elite_population[:sz]
-    group2 = elite_population[sz:]
-    parent1 = temp_map(vne_list, req_no)
-    # confirm for fitness value
-    for j in range(len(group1)):
-        if parent1.fitness < group1[j].fitness:
-            parent1 = group1[j]
-    parent2 = temp_map(vne_list, req_no)
-    for j in range(len(group2)):
-        if parent2.fitness < group2[j].fitness:
-            parent2 = group2[j]
+    # sz = len(elite_population) // 2
+    # group1 = elite_population[:sz]
+    # group2 = elite_population[sz:]
+    # parent1 = temp_map(vne_list, req_no)
+    # # confirm for fitness value
+    # for j in range(len(group1)):
+    #     if parent1.fitness < group1[j].fitness:
+    #         parent1 = group1[j]
+    # parent2 = temp_map(vne_list, req_no)
+    # for j in range(len(group2)):
+    #     if parent2.fitness < group2[j].fitness:
+    #         parent2 = group2[j]
+    parent1, parent2 = (elite_population[0], elite_population[1]) # for random selection of parents
     return parent1, parent2
 
 
