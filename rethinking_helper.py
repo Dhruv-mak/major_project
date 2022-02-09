@@ -130,7 +130,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     all_paths = []
     virtual_edges = []
     for edge in virtual.edges:
-        if int(edge[0]) < int(edge[1]):
+        if int(edge[0]) > int(edge[1]):
             weight = virtual.edge_weights[edge]
             virtual_edges.append(weight)
             left_node = req_map.node_map[int(edge[0])]
@@ -188,7 +188,7 @@ def elastic_crossover(
     )
     for i in parent2_pos:
         parent2.edge_map[i] = parent1_copy.edge_map[i]
-        parent2.path_cost[i] = parent2_copy.path_cost[i]
+        parent2.path_cost[i] = parent1_copy.path_cost[i]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
         parent1 = None
         logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
@@ -213,7 +213,7 @@ def mutate(
     child.edge_map[random_no] = substrate.findPathFromSrcToDst(
         edge[0], edge[1], child.edge_weight[random_no]
     )
-    child.path_cost[random_no] = len(child.edge_map[random_no])*child.edge_weight[random_no]
+    child.path_cost[random_no] = (len(child.edge_map[random_no])-1)*child.edge_weight[random_no]
     if not check_compatibility(child, copy.deepcopy(substrate), virtual):
         child = None
         logging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
@@ -239,6 +239,10 @@ def check_compatibility(chromosome, substrate_copy, virtual):
                 < virtual.edge_weights[virtual.edges[i]]
             ):
                 return False
+            else:
+                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
+                edge = (str(path[j]), str(path[j-1]))
+                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
     return True
 
 
