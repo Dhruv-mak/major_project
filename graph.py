@@ -158,11 +158,19 @@ class Graph:
   
     # Prints all paths from 's' to 'd'
     def printAllPaths(self, s, d, weight):
-        visited =[False]*(self.nodes) # Mark all the vertices as not visited 
-        path = []   # Create an array to store a path
-        all_path = []   # array to store all the paths
-        self.printAllPathsUtil(s, d, visited, weight, path, all_path)  # Call the recursive helper function to print all paths
-        return all_path
+        # visited =[False]*(self.nodes) # Mark all the vertices as not visited 
+        # path = []   # Create an array to store a path
+        # all_path = []   # array to store all the paths
+        # self.printAllPathsUtil(s, d, visited, weight, path, all_path)  # Call the recursive helper function to print all paths
+        # return all_path
+        all_paths = []
+        visited = [False] * (self.nodes)
+        path = []
+        self.findPaths(s, d, visited, path, all_paths, weight)
+        if all_paths == []:
+            return []
+        else:
+            return all_paths
   
 if __name__ == '__main__':
     nodes = 4

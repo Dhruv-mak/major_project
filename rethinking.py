@@ -176,6 +176,7 @@ def main():
 
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
         
+        sorder = sorted([a for a in range(substrate.nodes)], key = lambda x: substrate.node_weights[x]) # ascending order
         sub_wt = []
         for node in range(substrate.nodes):
             sub_wt.append((node, substrate.node_weights[node]))

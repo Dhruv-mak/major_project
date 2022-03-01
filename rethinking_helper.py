@@ -145,6 +145,10 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
                 return None
             if len(paths) == 0:
                 return None
+            for path in paths:
+                for j in range(1, len(path)):
+                    if substrate.edge_weights[(str(path[j - 1]), str(path[j]))] < weight:
+                        print("wrong wrong!!!!")
             all_paths.append(paths)
     initial_population = select_random_path(
         req_map, vne_list, req_no, all_paths, substrate_copy
