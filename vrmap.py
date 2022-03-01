@@ -11,7 +11,6 @@ def main():
     bracket = []
     revenue = 0
     substrate, vne_list = helper.read_pickle()
-    copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="vrmap.log",filemode="w", level=logging.INFO)
 
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
@@ -122,31 +121,14 @@ def main():
     logging.info(f"\t\tThe selected map is {selected_map.node_map}\ttotal cost: {selected_map.total_cost}")
     logging.info(f"\t\tedge map: {selected_map.edge_map}")
    
-    path_cnt=0
-    for ed in selected_map.edge_map:
-        path_cnt += len(selected_map.edge_map[ed])
-    path_cnt //=2
     pre_resource_edgecost = sum(substrate.edge_weights.values())//2
     pre_resource_nodecost = sum(substrate.node_weights.values())
     pre_resource = pre_resource_edgecost + pre_resource_nodecost
 
     substract_from_substrate(substrate, selected_map, index_chromosome, vne_list)
 
-    post_resource_edgecost =0
-    post_resource_nodecost=0
-    utilized_nodes=0
-    utilized_links=0
-    for edge in substrate.edge_weights:
-        post_resource_edgecost += substrate.edge_weights[edge]
-        if substrate.edge_weights[edge]!=copy_sub.edge_weights[edge]:
-            utilized_links += 1
-    post_resource_edgecost //= 2
-    for node in substrate.node_weights:
-        post_resource_nodecost += substrate.node_weights[node]
-        if substrate.node_weights[node] != copy_sub.node_weights[node]:
-            utilized_nodes += 1
+    post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
 
-    post_resource = post_resource_edgecost + post_resource_nodecost
     log_substrate(substrate)    
 
     
@@ -154,13 +136,9 @@ def main():
     logging.info(f"\t\tThe revenue is {revenue}\tTotal cost is {tot_cost}")
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {len(vne_list)} out of {len(vne_list)}")
-    logging.info(f"\t\tEmbedding ratio is {(len(vne_list)/len(vne_list))*100:.4f}%\n")
-    logging.info(f"\t\tTotal {utilized_nodes} nodes are utilized out of {len(substrate.node_weights)}")
-    logging.info(f"\t\tTotal {utilized_links//2} links are utilized out of {len(substrate.edge_weights)//2}\n")
-    logging.info(f"\t\tAvailabe substrate before embedding CRB: {pre_resource_nodecost} BW: {pre_resource_edgecost} total: {pre_resource}")
-    logging.info(f"\t\tAvailabe substrate after embedding CRB: {post_resource_nodecost} BW: {post_resource_edgecost} total: {post_resource}")
-    logging.info(f"\t\tConsumed substrate CRB: {pre_resource_nodecost-post_resource_nodecost} BW: {pre_resource_edgecost-post_resource_edgecost} total: {pre_resource - post_resource}\n")
-    logging.info(f"\t\tAverage Path length is {(path_cnt/len(vne_list)):.4f}\n")
+    logging.info(f"\t\tEmbedding ratio is {(len(vne_list)/len(vne_list))*100:.4f}%")
+    logging.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    logging.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
     logging.info(f"\t\tAverage link utilization {(selected_map.edge_cost/pre_resource_edgecost)*100:.4f}%")
     logging.info(f"\t\tAverage node utilization {(selected_map.node_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tTotal Duration {duration} (HH:MM:SS)")

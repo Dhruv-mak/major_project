@@ -81,7 +81,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 def main():
     substrate, vne_list = helper.read_pickle()
     logging.basicConfig(filename="vikor.log",filemode="w", level=logging.INFO)
-    copy_sub = copy.deepcopy(substrate)
+
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
     temp = []
@@ -111,7 +111,6 @@ def main():
     start_time = datetime.now().time()
     accepted = 0
     revenue = 0
-    path_cnt=0
     curr_map = dict() # only contains the requests which are successfully mapped
     pre_resource_edgecost = sum(substrate.edge_weights.values())//2 # total available bandwidth of the physical network
     pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
@@ -134,8 +133,6 @@ def main():
             continue
         accepted += 1
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
-        for ed in req_map.edge_map:
-            path_cnt += len(req_map.edge_map[ed])
         print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with revenue {sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2} and total cost {req_map.total_cost}\n")
         curr_map[req_no] = req_map
@@ -146,27 +143,10 @@ def main():
     for request in curr_map.values():
         ed_cost += request.edge_cost # total bandwidth for all the mapped requests
         no_cost += request.node_cost # total crb for all the mapped requests
+
     tot_cost = ed_cost + no_cost
-
-    # post_resource_nodecost = sum(substrate.node_weights.values()) 
-    # post_resource_edgecost = sum(substrate.edge_weights.values())//2
-    # post_resource = post_resource_edgecost + post_resource_nodecost
-
-    post_resource_edgecost =0
-    post_resource_nodecost=0
-    utilized_nodes=0
-    utilized_links=0
-    for edge in substrate.edge_weights:
-        post_resource_edgecost += substrate.edge_weights[edge]
-        if substrate.edge_weights[edge]!=copy_sub.edge_weights[edge]:
-            utilized_links += 1
-    post_resource_edgecost //= 2
-    for node in substrate.node_weights:
-        post_resource_nodecost += substrate.node_weights[node]
-        if substrate.node_weights[node] != copy_sub.node_weights[node]:
-            utilized_nodes += 1
-
-    post_resource = post_resource_edgecost + post_resource_nodecost
+    post_resource = sum(substrate.node_weights.values()) + sum(substrate.edge_weights.values())//2
+    
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
     
@@ -197,13 +177,9 @@ def main():
 
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
-    logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%\n")
-    logging.info(f"\t\tTotal {utilized_nodes} nodes are utilized out of {len(substrate.node_weights)}")
-    logging.info(f"\t\tTotal {utilized_links//2} links are utilized out of {len(substrate.edge_weights)//2}\n")
-    logging.info(f"\t\tAvailabe substrate before embedding CRB: {pre_resource_nodecost} BW: {pre_resource_edgecost} total: {pre_resource}")
-    logging.info(f"\t\tAvailabe substrate after embedding CRB: {post_resource_nodecost} BW: {post_resource_edgecost} total: {post_resource}")
-    logging.info(f"\t\tConsumed substrate CRB: {pre_resource_nodecost-post_resource_nodecost} BW: {pre_resource_edgecost-post_resource_edgecost} total: {pre_resource - post_resource}\n")
-    logging.info(f"\t\tAverage Path length is {(path_cnt/accepted):.4f}")
+    logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%")
+    logging.info(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    logging.info(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
     logging.info(f"\t\tAverage link utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
     logging.info(f"\t\tAverage node utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
