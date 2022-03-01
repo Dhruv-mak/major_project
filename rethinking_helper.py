@@ -47,7 +47,7 @@ def node_map(substrate, virtual, req_no):
         for snode in sorder:
             if (
                 substrate.node_weights[snode] >= virtual.node_weights[vnode]
-                and snode not in assigned_nodes
+                and snode not in assigned_nodes # constraint for non-repeating node number
                 and check_location(substrate, virtual, snode, vnode, 100) # pass radius here
             ):
                 map[vnode] = snode
@@ -130,7 +130,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     all_paths = []
     virtual_edges = []
     for edge in virtual.edges:
-        if int(edge[0]) < int(edge[1]):
+        if int(edge[0]) > int(edge[1]):
             weight = virtual.edge_weights[edge]
             virtual_edges.append(weight)
             left_node = req_map.node_map[int(edge[0])]
@@ -151,23 +151,24 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 
 def tournament_selection(elite_population, vne_list, req_no):
     random.shuffle(elite_population)
-    sz = len(elite_population) // 2
-    group1 = elite_population[:sz]
-    group2 = elite_population[sz:]
-    parent1 = temp_map(vne_list, req_no)
-    # confirm for fitness value
-    for j in range(len(group1)):
-        if parent1.fitness < group1[j].fitness:
-            parent1 = group1[j]
-    parent2 = temp_map(vne_list, req_no)
-    for j in range(len(group2)):
-        if parent2.fitness < group2[j].fitness:
-            parent2 = group2[j]
+    # sz = len(elite_population) // 2
+    # group1 = elite_population[:sz]
+    # group2 = elite_population[sz:]
+    # parent1 = temp_map(vne_list, req_no)
+    # # confirm for fitness value
+    # for j in range(len(group1)):
+    #     if parent1.fitness < group1[j].fitness:
+    #         parent1 = group1[j]
+    # parent2 = temp_map(vne_list, req_no)
+    # for j in range(len(group2)):
+    #     if parent2.fitness < group2[j].fitness:
+    #         parent2 = group2[j]
+    parent1, parent2 = (elite_population[0], elite_population[1]) # for random selection of parents
     return parent1, parent2
 
 
 def elastic_crossover(
-    parent1, parent2, population_set, substrate, virtual, itr
+    parent1, parent2, population_set, substrate, virtual, itr, elite_population
 ):  # itr is inside loop number
     if len(parent1.edge_map) <= 1:
         return None, None
@@ -188,24 +189,39 @@ def elastic_crossover(
     )
     for i in parent2_pos:
         parent2.edge_map[i] = parent1_copy.edge_map[i]
-        parent2.path_cost[i] = parent2_copy.path_cost[i]
+        parent2.path_cost[i] = parent1_copy.path_cost[i]
     if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
-        parent1 = None
+        # parent1 = None
         logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
-    if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
-        parent2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
-    if parent1 is not None and get_hashable_map(parent1) in population_set:
+    elif get_hashable_map(parent1) in population_set:
         logging.warning(f"\t\t{itr}-Could not get distict child1")
-        parent1 = None
-    if parent2 is not None and get_hashable_map(parent2) in population_set:
+        # parent1 = None
+    else:
+        parent1.fitness = get_fitness(parent1, virtual)
+        parent1.edge_cost = sum(parent1.path_cost)
+        parent1.total_cost = parent1.node_cost + parent1.edge_cost
+        elite_population.append(parent1)
+        population_set.add(get_hashable_map(parent1))
+        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent1.edge_map}\tfitness: {parent1.fitness:.4f}\ttot_cost: {parent1.total_cost}")
+
+    if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
+        # parent2 = None
+        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
+    elif get_hashable_map(parent2) in population_set:
         logging.warning(f"\t\t{itr}-could not get distict child2")
-        parent2 = None
+        # parent2 = None
+    else:
+        parent1.fitness = get_fitness(parent1, virtual)
+        parent1.edge_cost = sum(parent1.path_cost)
+        parent1.total_cost = parent1.node_cost + parent1.edge_cost
+        elite_population.append(parent1)
+        population_set.add(get_hashable_map(parent1))
+        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent2.edge_map}\tfitness: {parent2.fitness:.4f}\ttot_cost: {parent2.total_cost}")
     return parent1, parent2
 
 
 def mutate(
-    child, substrate, population_set, virtual, itr
+    child, substrate, population_set, virtual, itr, elite_population
 ):  # itr is inside loop number
     random_no = random.randint(0, len(child.edge_map) - 1)
     sel_path = child.edge_map[random_no]
@@ -213,13 +229,24 @@ def mutate(
     child.edge_map[random_no] = substrate.findPathFromSrcToDst(
         edge[0], edge[1], child.edge_weight[random_no]
     )
-    child.path_cost[random_no] = len(child.edge_map[random_no])*child.edge_weight[random_no]
+    child.path_cost[random_no] = (len(child.edge_map[random_no])-1)*child.edge_weight[random_no]
     if not check_compatibility(child, copy.deepcopy(substrate), virtual):
         child = None
         logging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
-    if child is not None and get_hashable_map(child) in population_set:
+    elif get_hashable_map(child) in population_set:
         logging.warning(f"\t\t{itr}-Could not get distict mutated_child")
         child = None
+    else:
+        child.edge_cost = sum(child.path_cost)
+        child.total_cost = (
+            child.node_cost + child.edge_cost
+        )
+        child.fitness = get_fitness(
+            child, virtual
+        )
+        elite_population.append(child)
+        population_set.add(get_hashable_map(child))
+        logging.info(f"\t\t\t{itr}-Added Muted Child {child.edge_map}\tfitness: {child.fitness:.4f}\ttot_cost: {child.total_cost}")
     return child
 
 
@@ -239,6 +266,10 @@ def check_compatibility(chromosome, substrate_copy, virtual):
                 < virtual.edge_weights[virtual.edges[i]]
             ):
                 return False
+            else:
+                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
+                edge = (str(path[j]), str(path[j-1]))
+                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
     return True
 
 

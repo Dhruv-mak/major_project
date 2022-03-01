@@ -62,11 +62,13 @@ def main():
         if req_map is None:
             logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
+        else:
+            logging.info(f"\t Node embedding is done for {req_no}:::{req_map}")
         req_map = temp_map(vne_list, req_no, req_map)
         # [[PATH for edge 1], [PATH for edge 2]]
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
-        if population is None:
+        if population is None or len(population) == 0:
             logging.warning(f"\t\tinitial population can't be generated for {req_no}")
             continue
         population_set = set()
@@ -79,11 +81,11 @@ def main():
                     abhi_map.edges.append(edge)
                     abhi_map.edge_weight.append(vne_list[req_no].edge_weights[edge])
                     abhi_map.path_cost.append(
-                        vne_list[req_no].edge_weights[edge] * len(abhi_map.edge_map[j])
+                        vne_list[req_no].edge_weights[edge] * (len(abhi_map.edge_map[j])-1)
                     )
-                    abhi_map.edge_cost += abhi_map.edge_weight[j] * len(
+                    abhi_map.edge_cost += abhi_map.edge_weight[j] * (len(
                         abhi_map.edge_map[j]
-                    )
+                    ) - 1)
                     j += 1
             abhi_map.total_cost = abhi_map.node_cost + abhi_map.edge_cost
             abhi_map.fitness = get_fitness(abhi_map, vne_list[req_no])
@@ -99,64 +101,24 @@ def main():
             i = 0
             while i < 8:
                 i += 1
-                parent1, parent2 = tournament_selection(
+                parent1, parent2 = tournament_selection( # check it for random selection
                     elite_population, vne_list, req_no
                 )
                 child1, child2 = elastic_crossover(
-                    parent1, parent2, population_set, substrate, vne_list[req_no], i
-                )   # last argument i is for identify which inside loop 
-                if child1 is not None:
-                    child1.edge_cost = sum(child1.path_cost)
-                    child1.total_cost = child1.node_cost + child1.edge_cost
-                    elite_population.append(child1)
-                    population_set.add(get_hashable_map(child1))
-                    child1.fitness = get_fitness(child1, vne_list[req_no])
-                    logging.info(f"\t\t\t{i}-Added Crossovered Child1 {child1.edge_map}\tfitness: {child1.fitness:.4f}\ttot_cost: {child1.total_cost}")
-                if child2 is not None:
-                    child2.edge_cost = sum(child2.path_cost)
-                    child2.total_cost = child2.node_cost + child2.edge_cost
-                    elite_population.append(child2)
-                    population_set.add(get_hashable_map(child2))
-                    child2.fitness = get_fitness(child2, vne_list[req_no])
-                    logging.info(f"\t\t\t{i}-Added Crossovered Child2: {child2.edge_map}\tfitness: {child2.fitness:.4f}\ttot_cost: {child2.total_cost}")
-                if child1 is not None:
-                    mutated_child1 = mutate(
-                        child1, substrate, population_set, vne_list[req_no], i
+                    copy.deepcopy(parent1), copy.deepcopy(parent2), population_set, substrate, vne_list[req_no], i, elite_population
+                )   # last argument i is for identify which inside loop
+                if child1 is not None: 
+                    mutate(
+                        copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i, elite_population
                     ) # last argument i is for identify which inside loop
-                else:
-                    mutated_child1 = None
                 if child2 is not None:
-                    mutated_child2 = mutate(
-                        child2, substrate, population_set, vne_list[req_no], i
+                    mutate(
+                        copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i, elite_population
                     )
-                else:
-                    mutated_child2 = None
-                if mutated_child1 is not None:
-                    mutated_child1.edge_cost = sum(mutated_child1.path_cost)
-                    mutated_child1.total_cost = (
-                        mutated_child1.node_cost + mutated_child1.edge_cost
-                    )
-                    elite_population.append(mutated_child1)
-                    population_set.add(get_hashable_map(mutated_child1))
-                    mutated_child1.fitness = get_fitness(
-                        mutated_child1, vne_list[req_no]
-                    )
-                    logging.info(f"\t\t\t{i}-Added Muted Child1 {mutated_child1.edge_map}\tfitness: {mutated_child1.fitness:.4f}\ttot_cost: {mutated_child1.total_cost}")
-                if mutated_child2 is not None:
-                    mutated_child2.edge_cost = sum(mutated_child2.path_cost)
-                    mutated_child2.total_cost = (
-                        mutated_child2.node_cost + mutated_child2.edge_cost
-                    )
-                    elite_population.append(mutated_child2)
-                    population_set.add(get_hashable_map(mutated_child2))
-                    mutated_child2.fitness = get_fitness(
-                        mutated_child2, vne_list[req_no]
-                    )
-                    logging.info(f"\t\t\t{i}-Added Muted Child2 {mutated_child2.edge_map}\tfitness: {mutated_child2.fitness:.4f}\ttot_cost: {mutated_child2.total_cost}")
             elite_population, population_set = import_elite(elite_population)
             logging.info(f"")
             logging.info(f"\t\t\telite population after iteration {_}")
-            for i in initial_population:
+            for i in elite_population:
                 logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
             logging.info(f"")
         selected_map = get_best_map(elite_population)
@@ -172,22 +134,38 @@ def main():
         logging.info(f"\t\tThe edge map of VNR {req_no} is {ls}")
         
         sub_wt = []
-        for node in range(substrate.nodes):
+        sorder = sorted(
+            [a for a in range(substrate.nodes)],
+            key=lambda x: substrate.node_weights[x]
+        )
+        for node in sorder:
             sub_wt.append((node, substrate.node_weights[node]))
         logging.info(f"\t\tSubstrate node before mapping VNR-{req_no} is {sub_wt}")
         sub_wt = []
-        for edge in substrate.edges:
+        sorder = sorted(
+            [a for a in substrate.edges],
+            key=lambda x: substrate.edge_weights[x],
+        )
+        for edge in sorder:
             sub_wt.append((edge, substrate.edge_weights[edge]))
         logging.info(f"\t\tSubstrate edge before mapping VNR-{req_no} is {sub_wt}")
 
         substract_from_substrate(substrate, vne_list[req_no], selected_map)
         
         sub_wt = []
-        for node in range(substrate.nodes):
+        sorder = sorted(
+            [a for a in range(substrate.nodes)],
+            key=lambda x: substrate.node_weights[x]
+        )
+        for node in sorder:
             sub_wt.append((node, substrate.node_weights[node]))
         logging.info(f"\t\tSubstrate after mapping VNR-{req_no} is {sub_wt}")
         sub_wt = []
-        for edge in substrate.edges:
+        sorder = sorted(
+            [a for a in substrate.edges],
+            key=lambda x: substrate.edge_weights[x],
+        )
+        for edge in sorder:
             sub_wt.append((edge, substrate.edge_weights[edge]))
         logging.info(f"\t\tSubstrate edge after mapping VNR-{req_no} is {sub_wt}")
 
@@ -196,6 +174,7 @@ def main():
         for itr in range(len(selected_map.edge_map)):
             path_cnt += len(selected_map.edge_map[itr])
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
+
         logging.info(f"\n\n")
 
     ed_cost = 0
@@ -220,7 +199,6 @@ def main():
             utilized_nodes += 1
 
     post_resource = post_resource_edgecost + post_resource_nodecost
-
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(
         date.min, start_time
