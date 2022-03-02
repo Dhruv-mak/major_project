@@ -163,6 +163,8 @@ def tournament_selection(elite_population, vne_list, req_no):
     # for j in range(len(group2)):
     #     if parent2.fitness < group2[j].fitness:
     #         parent2 = group2[j]
+    if len(elite_population) == 1:
+        return elite_population[0], elite_population[0]
     parent1, parent2 = (elite_population[0], elite_population[1]) # for random selection of parents
     return parent1, parent2
 
