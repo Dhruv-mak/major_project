@@ -7,6 +7,7 @@ import pageRank
 import math
 import copy
 import logging
+from datetime import datetime, date
 log = logging.getLogger(__name__)
 
 # This function will sort the node of network according to their rank
@@ -153,12 +154,18 @@ def printLinkEmbedding(linkEmbedding):
 
 def calculate_vne_crb(vne_crb, vne_bandwidth, map_dict): # used for cost calculation ###
     cost = 0
+    node_cost =0
+    edge_cost=0
+    for node in vne_crb:
+        node_cost += vne_crb[node]
     for node in map_dict:
-        for v_node in node:
-            cost += vne_crb[v_node]
-        sub_cost = vne_bandwidth[node]
-        cost += sub_cost * len(map_dict[node])
-    return cost
+        # for v_node in node:
+        #     node_cost += vne_crb[v_node]
+        # sub_cost = vne_bandwidth[node]
+        edge_cost += vne_bandwidth[node] * len(map_dict[node])
+    return node_cost+edge_cost
+
+    
 
 def update_sn_crb(node_crb, vne_crb, map_dict):
     try:
@@ -340,14 +347,16 @@ def node_rank_mapping(graph, nodeLoc, linkBandWidth, nodeCRB,
     return -1
 
 # function to generate node location
-def generatenodeLoc(network):
+def generatenodeLoc(network, original_net):
     networkLoc = dict()
     for i in network:
-        networkLoc[i] = (random.randint(0,100),random.randint(0,100))
+        # networkLoc[i] = (random.randint(0,100),random.randint(0,100))
+        x, y = original_net.node_pos[i-1]
+        networkLoc[i] = (x, y)
     return networkLoc
 
-#function to generate linkBandWidth
-def generatelinkBandWidth(network,flag):
+# function to generate linkBandWidth
+def generatelinkBandWidth(network,flag, original_net):
     linkBandWidth = dict()
     for i in network:
         for j in network[i]:
@@ -355,19 +364,19 @@ def generatelinkBandWidth(network,flag):
                 linkBandWidth[(i,j)] = linkBandWidth[(j,i)]
             else:
                 if(not flag):
-                    linkBandWidth[(i,j)] = random.randint(10000,500000) # for SN
+                    linkBandWidth[(i,j)] = original_net.edge_weights[(str(i-1),str(j-1))] # for SN
                 else:
-                    linkBandWidth[(i,j)] = random.randint(1,10) # for VNR
+                    linkBandWidth[(i,j)] = original_net.edge_weights[(str(i-1),str(j-1))] # for VNR
     return linkBandWidth
 
 # function to generate CRB
-def generateCRB(network,flag):
+def generateCRB(network,flag, original_net):
     networkCRB = dict()
     for i in network:
         if(not flag):
-            networkCRB[i] = random.randint(10000,500000) # for SN
+            networkCRB[i] = original_net.node_weights[i-1] # for SN
         else:
-            networkCRB[i] = random.randint(1,10) # for VNR
+            networkCRB[i] = original_net.node_weights[i-1] # for VNR
     return networkCRB
 
 
@@ -398,22 +407,28 @@ def sortAccordingToRevenue(vneList):
                 vneList[j] = vneList[j+1]
                 vneList[j+1] = temp
 
-def generateDelay(vneRequest):
+def generateDelay(vneRequest, original_net):
     delay = dict()
     for i in vneRequest:
         for j in vneRequest[i]:
             if((j,i) in delay):
                 delay[(i,j)] = delay[(j,i)]
             else:
-                delay[(i,j)] = random.randint(1,4)
+                delay[(i,j)] = original_net.delay[(str(i-1),str(j-1))]
     return delay
 
-def embed_rank_mapping(sn, snLoc, snLinkBandWidth, snCRB, vneList,
+def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                        page_rank=True):
+    pre_sub_edgecost=sum(snLinkBandWidth.values())//2
+    pre_sub_nodecost=sum(snCRB.values())
+    copy_edge = copy.deepcopy(snLinkBandWidth)
+    copy_node = copy.deepcopy(snCRB)
     total_vne_cost = 0
     total_vne_revenue = 0
     total_vne = len(vneList)
     failed_vne = 0
+    path_cnt=0
+    vl_cnt=0
     for vneContainer in vneList:
         vneRequest = vneContainer[0]
         vneLoc = vneContainer[1]
@@ -422,16 +437,19 @@ def embed_rank_mapping(sn, snLoc, snLinkBandWidth, snCRB, vneList,
         vneLR = vneContainer[4]
         vneDelay = vneContainer[5]
         total_vne_revenue += vneContainer[-2]
+        log.info(f"crb: {sum(vnelinkBandWidth.values())//2} bw: {sum(vneCRB.values())}")
         log.info("\nEmbedding for virtual network request: %s of revenue: %s$"%
               (vneContainer[ -1], vneContainer[-2]))
         log.info("-" * 60)
-        embeding_out = [vneContainer[-1],
-                        rankingMapping(sn, snLoc, snLinkBandWidth, snCRB, vneRequest, vneLoc,
-                        vnelinkBandWidth, vneCRB, vneLR, vneDelay, page_rank)]
+        tmp = rankingMapping(sn, snLoc, snLinkBandWidth, snCRB, vneRequest, vneLoc,
+                        vnelinkBandWidth, vneCRB, vneLR, vneDelay, page_rank)
+        if tmp==-1:
+            tmp = [-1]
+        embeding_out = [vneContainer[-1], tmp]
         log.info('\nEmbedding details of vne %s' % embeding_out[0])
         log.info("-" * 30)
-        # print snLinkBandWidth
-        # print vnelinkBandWidth
+        # log.infosnLinkBandWidth
+        # log.infovnelinkBandWidth
         if embeding_out[1][0] == -1:
             failed_vne += 1
             log.info('Error - Embedding is skipped as No shortest path found')
@@ -444,23 +462,59 @@ def embed_rank_mapping(sn, snLoc, snLinkBandWidth, snCRB, vneList,
                                 link_map_dict)
             _ncost = calculate_vne_crb(vneCRB, vnelinkBandWidth, link_map_dict)
             total_vne_cost += _ncost
+            for node in link_map_dict:
+                path_cnt +=len(link_map_dict[node])
+                vl_cnt += 1
+
             log.info("\ncost incurred for embedding vne %s is %s$" % (vneContainer[
                                                                     -1], _ncost))
             log.info("-" * 30)
+    
+    post_sub_edgecost =0
+    post_sub_nodecost=0
+    utilized_nodes=0
+    utilized_links=0
+    for edge in snLinkBandWidth:
+        post_sub_edgecost += snLinkBandWidth[edge]
+        if snLinkBandWidth[edge]!=copy_edge[edge]:
+            utilized_links += 1
+    post_sub_edgecost //= 2
+    for node in snCRB:
+        post_sub_nodecost += snCRB[node]
+        if snCRB[node] != copy_node[node]:
+            utilized_nodes += 1
+
+    no_cost = pre_sub_nodecost-post_sub_nodecost
+    ed_cost = pre_sub_edgecost-post_sub_edgecost
+
+    
+    end_time = datetime.now().time()
+    duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
+    
     embedding_ratio = (float(total_vne - failed_vne) / float(total_vne)) * 100
+    log.info("\n\n\n")
     if page_rank:
-        log.info("\nSummary (Stble google PageRank):")
+        log.info("\t\tSummary (Stble google PageRank):")
     else:
-        log.info("\nSummary (Direct Method NodeRank):")
-    log.info("-" * 30)
-    log.info("\nTotal number of nodes in substrate network - %s nodes" % len(sn))
-    log.info('\nTotal number of VNE request - %d request' % total_vne)
-    log.info('Total number VNE request successfully embedded - %d' % (total_vne - failed_vne))
-    log.info('\nEmbedding ratio is ' + str(int(embedding_ratio)) + '%')
-    log.info('\nTotal revenue for all VNEs is %s$' % total_vne_revenue)
-    log.info('\nTotal cost incurred for embedding all VNE requests is %s$' % str(
-        total_vne_cost))
-    log.info("#"*30)
+        log.info("\t\tSummary (Direct Method NodeRank):")
+    log.info("*" * 100)
+    log.info(f"The revenue is {total_vne_revenue} and total cost is {total_vne_cost}")
+    log.info(f"The revenue to cost ratio is {(total_vne_revenue/total_vne_cost)*100:.4f}%")
+    log.info(f"Total {total_vne-failed_vne} requests are embedded out of {total_vne}")
+    log.info(f"Embedding ratio is {((total_vne-failed_vne)/total_vne )*100:.4f}%\n")
+    log.info(f"Substrate links utilized are {utilized_links//2} out of {len(snLinkBandWidth)//2}")
+    log.info(f"Substrate nodes utilized are {utilized_nodes} out of {len(snCRB)}\n")
+    log.info(f"Substrate before embedding CRB: {pre_sub_nodecost} BW: {pre_sub_edgecost} total: {pre_sub_nodecost+pre_sub_edgecost}")
+    log.info(f"Substrate after embedding CRB: {post_sub_nodecost} BW: {post_sub_edgecost} total: {post_sub_nodecost+post_sub_edgecost}")
+    log.info(f"Substrate consumed CRB: {no_cost} BW: {ed_cost} total: {no_cost+ed_cost}\n")
+    log.info(f"Average Path Length {(path_cnt/vl_cnt):.4f}\n")
+    log.info(f"Average link utilization {(ed_cost/pre_sub_edgecost)*100:.4f}%")
+    log.info(f"Average node utilization {(no_cost/pre_sub_nodecost)*100:.4f}%")
+    log.info(f"Average Execution time {duration/total_vne}")
+    
+    log.info("#"*100)
+    if page_rank:
+        log.info("\n\n\n\n\n\n\n\n")
 
 
 def generateReqDelay(requests):
@@ -475,7 +529,7 @@ def generateReqDelay(requests):
         return delay
 
 # This is the main function to be called to get the embedding
-def calling(sn, vneRequests):
+def calling(start_time, sn, vneRequests, substrate, vne_list):
     '''
         @param : sn -> this is the substrate graph {must be in the from of dictionary}
         @param : vneRequests -> this is the list of vneRequest where each vneRequest is the vne graph {must be in the form of dictionary}
@@ -483,22 +537,25 @@ def calling(sn, vneRequests):
     cost_per_unit_crb = 1
     cost_per_unit_bandwidth = 1
     log.info("this is all the inputs and their values\n")
-    snLoc = generatenodeLoc(sn)
-    snLinkBandWidth = generatelinkBandWidth(sn,False)
-    snCRB = generateCRB(sn,False)
+    snLoc = generatenodeLoc(sn, substrate)
+    snLinkBandWidth = generatelinkBandWidth(sn,False, substrate)
+    snCRB = generateCRB(sn,False, substrate)
 
     # snLinkBandWidth = {(1,2):5,(2,1):5,(2,5):6,(5,2):6,(5,4):10,(4,5):10,(4,3):4,(3,4):4,(1,3):4,(3,1):4,(3,5):10,(5,3):10}
     # snCRB = {1:5,2:5,3:15,4:16,5:15}
     vneEmbeddings = list()
     vneList = list()
-    for vneRequest in vneRequests:
-        vneLoc = generatenodeLoc(vneRequest)
-        vnelinkBandWidth = generatelinkBandWidth(vneRequest,True)
-        vneCRB = generateCRB(vneRequest,True)
+    for i in range(len(vne_list)):
+    # for vneRequest in vneRequests:
+        vneRequest = vneRequests[i]
+        vneLoc = generatenodeLoc(vneRequest, vne_list[i])
+        vnelinkBandWidth = generatelinkBandWidth(vneRequest,True, vne_list[i])
+        vneCRB = generateCRB(vneRequest,True, vne_list[i])
         # vnelinkBandWidth = {(1,2):10,(2,1):10}
         # vneCRB = {1:15,2:16}
         vneLR = generateLR(vneRequest)
-        vneDelay = generateDelay(vneRequest)
+        vneDelay = generateDelay(vneRequest, vne_list[i])
+        # vneList.append([vneRequest,vneLoc,vnelinkBandWidth,vneCRB,vneLR,vneDelay])
         vneList.append([vneRequest,vneLoc,vnelinkBandWidth,vneCRB,vneLR,vneDelay])
     calculateRevenue(vneList, cost_per_unit_crb, cost_per_unit_bandwidth)
     for i in range(len(vneList)):
@@ -509,9 +566,9 @@ def calling(sn, vneRequests):
     _snLinkBandWidth = copy.deepcopy(snLinkBandWidth)
     _snCRB = copy.deepcopy(snCRB)
     _vneList = copy.deepcopy(vneList)
-    embed_rank_mapping(sn, snLoc, snLinkBandWidth, snCRB, vneList,
+    embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                        page_rank=True)
-    embed_rank_mapping(_sn, _snLoc, _snLinkBandWidth, _snCRB, _vneList,
+    embed_rank_mapping(start_time, _sn, _snLoc, _snLinkBandWidth, _snCRB, _vneList,
                        page_rank=False)
 
 

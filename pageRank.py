@@ -109,10 +109,11 @@ def getNOV(rb,nodeRank, delay):
                 temp = rb[i+1]*rb[j+1]*1 # 1 is alpha
                 if delay == 1:
                     den = (nodeRank[i + 1]['distance'][j + 1] ** 2) * Delay
+                elif (i + 1, j + 1) in Delay:
+                    den = (nodeRank[i + 1]['distance'][j + 1] ** 2) * (Delay[(i + 1, j + 1)]**2)
                 else:
-                    den = (nodeRank[i + 1]['distance'][j + 1] ** 2) * (Delay[
-                        (i + 1, j + 1)]*Delay[(i + 1, j + 1)])
-                novMatrix[i][j] = temp/den
+                    den = None
+                novMatrix[i][j] = temp/den if den else -1
     except Exception as err:
         log.info(err)
     return novMatrix
