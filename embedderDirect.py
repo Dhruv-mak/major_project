@@ -419,6 +419,7 @@ def generateDelay(vneRequest, original_net):
 
 def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                        page_rank=True):
+    accepted = []
     pre_sub_edgecost=sum(snLinkBandWidth.values())//2
     pre_sub_nodecost=sum(snCRB.values())
     copy_edge = copy.deepcopy(snLinkBandWidth)
@@ -436,7 +437,7 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
         vneCRB = vneContainer[3]
         vneLR = vneContainer[4]
         vneDelay = vneContainer[5]
-        total_vne_revenue += vneContainer[-2]
+        # total_vne_revenue += vneContainer[-2]
         log.info(f"crb: {sum(vnelinkBandWidth.values())//2} bw: {sum(vneCRB.values())}")
         log.info("\nEmbedding for virtual network request: %s of revenue: %s$"%
               (vneContainer[ -1], vneContainer[-2]))
@@ -466,10 +467,13 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                 path_cnt +=len(link_map_dict[node])
                 vl_cnt += 1
 
+            accepted.append(vneContainer)
             log.info("\ncost incurred for embedding vne %s is %s$" % (vneContainer[
                                                                     -1], _ncost))
             log.info("-" * 30)
-    
+    for container in accepted:
+        total_vne_revenue += container[-2]
+        
     post_sub_edgecost =0
     post_sub_nodecost=0
     utilized_nodes=0
