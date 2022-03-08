@@ -503,6 +503,9 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
         log.info("\t\tSummary (Direct Method NodeRank):")
     log.info("*" * 100)
     log.info(f"The revenue is {total_vne_revenue} and total cost is {total_vne_cost}")
+    if total_vne_cost == 0:
+        logging.error(f"\t\tCouldn't embedd any request")
+        return
     log.info(f"The revenue to cost ratio is {(total_vne_revenue/total_vne_cost)*100:.4f}%")
     log.info(f"Total {total_vne-failed_vne} requests are embedded out of {total_vne}")
     log.info(f"Embedding ratio is {((total_vne-failed_vne)/total_vne )*100:.4f}%\n")
