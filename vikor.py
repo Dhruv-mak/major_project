@@ -5,9 +5,6 @@ import copy
 from datetime import datetime, date
 import logging
 
-# global log1
-# log1 = logging.getLogger('log1')
-
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
         self.node_map = map
