@@ -60,16 +60,16 @@ def main():
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is None:
-            logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
+            logging.warning(f"\t\tNode mapping not possible for req no {req_no}\n\n\n")
             continue
         else:
-            logging.info(f"\t Node embedding is done for {req_no}:::{req_map}")
+            logging.info(f"\tNode embedding is done for {req_no}:::{req_map}")
         req_map = temp_map(vne_list, req_no, req_map)
         # [[PATH for edge 1], [PATH for edge 2]]
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
         if population is None or len(population) == 0:
-            logging.warning(f"\t\tinitial population can't be generated for {req_no}")
+            logging.warning(f"\t\tinitial population can't be generated for request no : {req_no}\n\n\n")
             continue
         population_set = set()
         for i in population:
@@ -96,31 +96,32 @@ def main():
             logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\t tot_cost: {i.total_cost}")
         logging.info(f"\n\n")
         elite_population = copy.deepcopy(initial_population)
-        for _ in range(8):
-            logging.info(f"\t\t\t\t ITERATION {_}")
-            i = 0
-            while i < 8:
-                i += 1
-                parent1, parent2 = tournament_selection( # check it for random selection
-                    elite_population, vne_list, req_no
-                )
-                child1, child2 = elastic_crossover(
-                    copy.deepcopy(parent1), copy.deepcopy(parent2), population_set, substrate, vne_list[req_no], i, elite_population
-                )   # last argument i is for identify which inside loop
-                if child1 is not None: 
-                    mutate(
-                        copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i, elite_population
-                    ) # last argument i is for identify which inside loop
-                if child2 is not None:
-                    mutate(
-                        copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i, elite_population
+        if len(elite_population) > 1:
+            for _ in range(8):
+                logging.info(f"\t\t\t\t ITERATION {_}")
+                i = 0
+                while i < 8:
+                    i += 1
+                    parent1, parent2 = tournament_selection( # check it for random selection
+                        elite_population, vne_list, req_no
                     )
-            elite_population, population_set = import_elite(elite_population)
-            logging.info(f"")
-            logging.info(f"\t\t\telite population after iteration {_}")
-            for i in elite_population:
-                logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
-            logging.info(f"")
+                    child1, child2 = elastic_crossover(
+                        copy.deepcopy(parent1), copy.deepcopy(parent2), population_set, substrate, vne_list[req_no], i, elite_population
+                    )   # last argument i is for identify which inside loop
+                    if child1 is not None: 
+                        mutate(
+                            copy.deepcopy(child1), substrate, population_set, vne_list[req_no], i, elite_population
+                        ) # last argument i is for identify which inside loop
+                    if child2 is not None:
+                        mutate(
+                            copy.deepcopy(child2), substrate, population_set, vne_list[req_no], i, elite_population
+                        )
+                elite_population, population_set = import_elite(elite_population)
+                logging.info(f"")
+                logging.info(f"\t\t\telite population after iteration {_}")
+                for i in elite_population:
+                    logging.info(f"\t\t\t{i.edge_map}\tfitness: {i.fitness:.4f}\ttot_cost: {i.total_cost}")
+                logging.info(f"")
         selected_map = get_best_map(elite_population)
         
         logging.info(f"\n")
@@ -234,7 +235,6 @@ def main():
         logging.error(f"\t\tCouldn't embedd any request")
         return
 
-    logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
     logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%\n")

@@ -176,6 +176,8 @@ def calW_new(matrix1,matrix2):
     for _arr in mat_diff_arr:
         sum += (_arr*_arr)
     n_value = math.sqrt(sum)
+    if n_value < -1.7976931348623157e+308:
+        n_value=1
     final_vlaue = max([elem/n_value for elem in mat_diff_arr])
     return final_vlaue
 

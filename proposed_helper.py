@@ -23,6 +23,11 @@ def divide(a, b):
     return 10**diff
 
 def compute_katz(graph):
+    '''
+    Returns an array of Katz Centrality for each node of the Graph
+    
+    TIME COMPLEXITY - O(V^2)*max_iteration => O(V^2) where V = no of nodes.
+    '''
     G = nx.Graph()
     G.add_nodes_from(nx.path_graph(graph.nodes))
     for edge in graph.edges:
@@ -31,7 +36,7 @@ def compute_katz(graph):
 
     # phi = (1+math.sqrt(graph.nodes+1000))/2.0 # largest eigenvalue of adj matrix
     # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
-    centrality = nx.katz_centrality(G)
+    centrality = nx.katz_centrality(G)  #Time complexity - O(V^2)*max_iteration => O(V^2)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
     print(centrality)
     return centrality
@@ -44,7 +49,7 @@ def compute_strength(graph):
             strength[u] += graph.edge_weights[(str(u), str(v))]
     return np.array(strength)
 
-
+# Time complexity O(V^2) ; V=no of nodes
 def get_ranks(graph):
     # 0: degree
     # 1: cetrality
@@ -108,6 +113,7 @@ def get_ranks(graph):
 
 
 # weight calculation using shanon entropy method
+# Time complexity O(V) v = no of nodes
 def get_weights(data, nodes):
     column_sums = data.sum(axis=0)
     normalized = (
