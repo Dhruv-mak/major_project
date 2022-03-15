@@ -1,8 +1,8 @@
 import os
 import pickle
 import sys
-import graph
-from vne import create_vne
+import graph_u
+from vne_u import create_vne
 
 
 class Extract:
@@ -14,14 +14,14 @@ class Extract:
             os.path.dirname(current),
             "P3_ALIB_MASTER",
             "input",
-            "senario_RedBestel.pickle",
+            "input.pickle",
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
-        para = graph.Parameters(10, 100, 10, 100, 0, 100, 0, 100, 1, 1)  # Parameters for subsrate graph
-        substrate = graph.Graph(
-            len(data.scenario_list[0].substrate.nodes),
-            data.scenario_list[0].substrate.edges,
+        para = graph_u.Parameters(1000, 10000, 1000, 10000, 0, 100, 0, 100, 1, 1)  # Parameters for subsrate graph BW ,CRB, Location,Delay
+        substrate = graph_u.Graph(
+            data.get("substrate").nodes,
+            data.get("substrate").edges,
             para,
         )
         # vne_list = create_vne(no_requests = req_no)   # USE THIS STATEMENT FOR AUTOMATION & comment line no 28

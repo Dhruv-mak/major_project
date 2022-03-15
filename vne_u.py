@@ -1,13 +1,13 @@
 import networkx as nx
 import random
-import graph
-from graph import Parameters
+import graph_u
+from graph_u import Parameters
+import numpy as np
 
 
-def create_vne(min_nodes=2, max_nodes=10, no_requests=1000, probability=0.4):
-    random_node_list = [
-        random.randint(min_nodes, max_nodes) for i in range(no_requests)
-    ]
+def create_vne(min_nodes=2, max_nodes=5, no_requests=300, probability=0.4):
+    random_node_list_arr = np.random.uniform(min_nodes, max_nodes, no_requests)
+    random_node_list = [round(i) for i in random_node_list_arr]
     new_vne_req = []
     for req in random_node_list:
         G = nx.erdos_renyi_graph(req, probability, directed=False)
@@ -45,7 +45,8 @@ def create_vne(min_nodes=2, max_nodes=10, no_requests=1000, probability=0.4):
         for j in range(nodes):
             for k in new_vne_req[i][j + 1]:
                 edges.add((str(j), str(k - 1)))
-        vne.append(graph.Graph(nodes, edges, Parameters(10, 20, 10, 20, 0, 100, 0, 100, 1, 4)) )  # for vne request
+        vne.append(graph_u.Graph(nodes, edges, Parameters(1, 10, 1, 10, 0, 100, 0, 100, 1, 4)) )  # for vne request BW ,CRB, Location,Delay
+    #print (vne)
     return vne
 
 
