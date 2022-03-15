@@ -36,7 +36,7 @@ def compute_katz(graph):
 
     # phi = (1+math.sqrt(graph.nodes+1000))/2.0 # largest eigenvalue of adj matrix
     # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
-    centrality = nx.katz_centrality(G)
+    centrality = nx.katz_centrality(G, max_iter = 10000)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
     return centrality
 
@@ -61,7 +61,7 @@ def compute_eigen(graph):
     G.add_nodes_from(nx.path_graph(graph.nodes))
     for edge in graph.edges:
         G.add_edge(int(edge[0]), int(edge[1]), weight=graph.edge_weights[edge])
-    centrality = nx.eigenvector_centrality(G)
+    centrality = nx.eigenvector_centrality(G, max_iter = 10000)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
     return centrality
 
@@ -136,7 +136,8 @@ def get_ranks(graph):
     crb = np.array([graph.node_weights[i] for i in range(graph.nodes)])
     attr_no = 6
     data = np.column_stack((degree, Katz_centrality, bw_centrality, eigen_centrality, strength, crb))
-    weight_mat = get_weights(data, graph.nodes)  # attribute weights    
+    weight_mat = get_weights(data, graph.nodes)  # attribute weights
+    print("weights:",weight_mat)    
     return topsis_ranking(convt_dict(graph), graph, weight_mat, normalize_mat(data).tolist())
 
 
@@ -146,18 +147,26 @@ def get_weights(data, nodes):
     normalized = (
         data / column_sums[:, np.newaxis].transpose()
     )  # normalizing the attribute values
+    normalized[np.isnan(normalized)] = 0
+    # normalized = np.zeros(data.shape)
+    # for i in range(data.shape[0]):
+    #     for j in range(data.shape[1]):
+    #         if column_sums[j] != 0:
+    #             normalized[i,j] = data[i,j]/column_sums[j]
     E_j = np.zeros(normalized.shape)
-    for i in range(normalized.shape[0]):
-        for j in range(normalized.shape[1]):
-            if normalized[i, j] != 0:
-                normalized[i, j] = normalized[i, j] * math.log(normalized[i, j])
-    # E_j = normalized * np.log(normalized)
+    # for i in range(normalized.shape[0]):
+    #     for j in range(normalized.shape[1]):
+    #         if normalized[i, j] != 0:
+    #             E_j[i, j] = normalized[i, j] * math.log(normalized[i, j])
+    E_j = normalized * np.log(normalized)
+    E_j[np.isnan(E_j)] = 0
     column_sum = np.sum(E_j, axis=0)
     k = 1 / np.log(nodes)
     column_sum = -k * column_sum
     column_sum = 1 - column_sum
     E_j_column_sum = sum(column_sum)
     w_j = column_sum / E_j_column_sum  # calculated weight array
+    print(f"Sum:{sum(w_j)}")
     return w_j
 
 
