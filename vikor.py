@@ -1,10 +1,12 @@
-from topsis_helper import get_ranks
+from proposed_helper import get_ranks
 import helper
 import sys
 import copy
 from datetime import datetime, date
 import logging
-import math
+
+# global log1
+# log1 = logging.getLogger('log1')
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -18,9 +20,7 @@ class temp_map:
 def node_map(substrate, virtual, req_no):
     map = [0 for x in range(virtual.nodes)]
     sorder = get_ranks(substrate) # ascending order
-    print(f"Ranks for substrate {sorder}")
     vorder = get_ranks(virtual) 
-    print(f"Ranks for vne {vorder}")
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:

@@ -1,5 +1,5 @@
 import pandas as pd
-from topsis import main as vikor
+from vikor import main as vikor
 from greedy import main as greedy
 from graph_extraction import for_automate
 import logging

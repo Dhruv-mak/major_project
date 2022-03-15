@@ -4,7 +4,7 @@ import graph
 from graph import Parameters
 
 
-def create_vne(min_nodes=2, max_nodes=10, no_requests=1000, probability=0.4):
+def create_vne(min_nodes=2, max_nodes=10, no_requests=5, probability=0.4):
     random_node_list = [
         random.randint(min_nodes, max_nodes) for i in range(no_requests)
     ]
