@@ -3,7 +3,7 @@ import copy
 from datetime import datetime, date
 import logging
 import random
-from topsis_helper import *
+from rethinking_helper import *
 
 
 def main():

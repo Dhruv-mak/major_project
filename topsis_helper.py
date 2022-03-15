@@ -1,312 +1,180 @@
-import copy
-import sys
-import random
+import networkx as nx
 import math
-import logging
+import numpy as np
+import pandas as pd
+import helper
+np.seterr(divide='ignore', invalid='ignore')    #ignores the division by zero (OR value tending to zero)
 
-x = False
+def divide(a, b):
+    '''
+    INPUT : two numbers a and b
+    OUTPUT: a/b (a divided by b)
+    
+    divide two numbers using log because if the denominator is two
+    low numpy will give warning of dividing by zero. converting to log then
+    applying antilog will give same result (i.e. a/b ) with no warnings.
 
+    divisions in the below code (eg-line number 84-87) can be done using this function
+    instead of dividing directly.
+    '''
+    loga = np.log10(a)
+    logb = np.log10(b)
+    diff = loga-logb
+    return 10**diff
 
-class temp_map:
-    def __init__(self, vne_list, req_no, map=[]) -> None:
-        self.node_map = map
-        self.node_cost = 0
-        self.node_cost += sum(vne_list[req_no].node_weights.values())
-        self.edge_cost = 0
-        self.total_cost = sys.maxsize
-        self.edge_map = []
-        self.edges = []
-        self.edge_weight = []
-        self.path_cost = []
-        self.fitness = 0
+def normalize_mat(a):
+    a = a*a
+    column_sum = np.sqrt(np.sum(a, axis=0))
+    return a/column_sum
 
+def compute_katz(graph):
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(graph.nodes))
+    for edge in graph.edges:
 
-def check_location(substrate, virtual, snode, vnode, radius):
-    x1, y1 = substrate.node_pos[snode]
-    x2, y2 = virtual.node_pos[vnode]
-    if math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) <= radius:
-        return True
-    return False
+        G.add_edge(int(edge[0]), int(edge[1]), weight=graph.edge_weights[edge])
 
+    # phi = (1+math.sqrt(graph.nodes+1000))/2.0 # largest eigenvalue of adj matrix
+    # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
+    centrality = nx.katz_centrality(G, max_iter = 10000)
+    centrality = np.array([centrality[i] for i in range(graph.nodes)])
+    return centrality
 
-# Also check for distance constraint(location)
-def node_map(substrate, virtual, req_no):
-    map = [0 for x in range(virtual.nodes)]
-    sorder = sorted(
-        [a for a in range(substrate.nodes)],
-        key=lambda x: substrate.node_weights[x],
-        reverse=True,
-    )  # descending order
-    vorder = sorted(
-        [a for a in range(virtual.nodes)],
-        key=lambda x: virtual.node_weights[x],
-        reverse=True,
-    )
-    assigned_nodes = set()
-    for vnode in vorder:
-        for snode in sorder:
-            if (
-                substrate.node_weights[snode] >= virtual.node_weights[vnode]
-                and snode not in assigned_nodes # constraint for non-repeating node number
-                and check_location(substrate, virtual, snode, vnode, 100) # pass radius here
-            ):
-                map[vnode] = snode
-                substrate.node_weights[snode] -= virtual.node_weights[vnode]
-                assigned_nodes.add(snode)
-                break
-            if snode == sorder[-1]:
-                return None
-    return map
+def convt_dict(graph):
+    graph = graph.neighbours
+    network = {}
+    for key, value in graph.items():
+        network[key] = [int(i) for i in value]
+    return network
 
+def compute_bw(graph):
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(graph.nodes))
+    for edge in graph.edges:
+        G.add_edge(int(edge[0]), int(edge[1]), weight=graph.edge_weights[edge])
+    centrality = nx.betweenness_centrality(G)
+    centrality = np.array([centrality[i] for i in range(graph.nodes)])
+    return centrality
 
-def selectPaths(
-    i, virtual_edges, all_paths, chromosome, init_pop, substrate, substrate_copy
-):
-    global x
-    if x == True:
-        return None
-    # if i >= len(virtual_edges):
-    #     return None
-    if len(chromosome) == len(virtual_edges):
-        flag = False
-        substrate_copy = copy.deepcopy(substrate)
-        for i in range(len(virtual_edges)):
-            # print(f"chrom {chromosome}")
-            path = chromosome[i]
-            weight = virtual_edges[i]
-            for j in range(1, len(path)):
-                substrate_copy.edge_weights[(path[j - 1], path[j])] -= weight
-                substrate_copy.edge_weights[(path[j], path[j - 1])] -= weight
-                if substrate_copy.edge_weights[(path[j], path[j - 1])] < 0:
-                    flag = True
-                    break
-            if flag == True:
-                break
-        if flag == False:
-            init_pop.append(copy.deepcopy(chromosome))
-            # print(f"appended : {len(init_pop)}  L : {chromosome}")
-        if len(init_pop) == 8:
-            x = True
-            return None
-    else:
-        for gene in all_paths[i]:
-            chromosome.append(gene)
-            selectPaths(
-                i + 1,
-                virtual_edges,
-                all_paths,
-                chromosome,
-                init_pop,
-                substrate,
-                substrate_copy,
-            )
-            chromosome.pop()
-
-    # return None
+def compute_eigen(graph):
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(graph.nodes))
+    for edge in graph.edges:
+        G.add_edge(int(edge[0]), int(edge[1]), weight=graph.edge_weights[edge])
+    centrality = nx.eigenvector_centrality(G, max_iter = 10000)
+    centrality = np.array([centrality[i] for i in range(graph.nodes)])
+    return centrality
 
 
-def select_random_path(req_map, vne_list, req_no, all_paths, substrate):
-    population = []
-    population_set = set()
-    curr_pop = 0
-    counter = 0
-    while curr_pop < 8 and counter < 1000:
-        curr_map = temp_map(vne_list, req_no, req_map.node_map)
-        for i in range(len(vne_list[req_no].edges) // 2):
-            curr_map.edge_map.append(random.choice(all_paths[i]))
-        if (
-            check_compatibility(curr_map, copy.deepcopy(substrate), vne_list[req_no])
-            and get_hashable_map(curr_map) not in population_set
-        ):
-            curr_pop += 1
-            population.append(curr_map)
-            population_set.add(get_hashable_map(curr_map))
-        counter += 1
-    return population
+def compute_strength(graph):
+    strength = [0 for _ in range(graph.nodes)]
+    for u in range(graph.nodes):
+        for v in graph.neighbours[u]:
+            strength[u] += graph.edge_weights[(str(u), str(v))]
+    return np.array(strength)
+
+def topsis_ranking(graph_dict, graph, weight_mx, _perf_mx):
+#get weighted normalized matirx
+    weighted_nor_mx = [[0, 0, 0, 0, 0, 0] for i in range(graph.nodes)]
+    for i in range(len(_perf_mx)):
+      for k in range(len(weight_mx)):
+        weighted_nor_mx[i][k] = _perf_mx[i][k] * weight_mx[k]
+
+    # get max and min of column matrix
+    max_list = list(map(max, zip(*weighted_nor_mx)))
+    min_list = list(map(min, zip(*weighted_nor_mx)))
+
+    ## max_list - weighted_nor_mx
+    max_weight_nor_mx = [[0, 0, 0, 0, 0, 0] for i in range(graph.nodes)]
+    min_weight_nor_mx = [[0, 0, 0, 0, 0, 0] for i in range(graph.nodes)]
+    for i in range(len(weighted_nor_mx)):
+      for k in range(len(max_list)):
+        max_weight_nor_mx[i][k] = max_list[k] - weighted_nor_mx[i][k]
+        min_weight_nor_mx[i][k] = min_list[k] - weighted_nor_mx[i][k]
+
+    s_plus_mx = [[] for i in range(graph.nodes)]
+    for _idx in range(len(max_weight_nor_mx)):
+      s_plus_mx[_idx] = [math.sqrt(sum(pow(value, 2) for value in
+                                      max_weight_nor_mx[_idx]))]
+    s_minus_mx = [[] for i in range(graph.nodes)]
+    for _idx in range(len(min_weight_nor_mx)):
+      s_minus_mx[_idx] = [math.sqrt(sum(pow(value, 2) for value in
+                                       min_weight_nor_mx[_idx]))]
+    ## s_plus_mx + s_minus_mx
+    s_plus_plus = [[0] for i in range(1, graph.nodes+1)]
+    for i in range(len(s_plus_mx)):
+      for k in range(len(s_plus_plus[i])):
+        s_plus_plus[i][k] = s_plus_mx[i][k] + s_minus_mx[i][k]
+    s_plus_plus_dict = {}
+    vertices = graph_dict.keys()
+    for idx, k in enumerate(vertices):
+      s_plus_plus_dict[k] = s_plus_plus[idx][0]
+
+    ## get rank values
+    rank_dict = {}
+    for idx, k in enumerate(vertices):
+      # rank_dict[k] = s_minus_mx[idx][0]/s_plus_plus[idx][0]
+      rank_dict[k] = 0 if (s_minus_mx[idx][0] == 0 and s_plus_plus[idx][0] ==
+                           0) else s_minus_mx[idx][0]/s_plus_plus[idx][0]
+    ## generate rank for nodes
+    node_rank = {key: rank for rank, key in enumerate(sorted(rank_dict,
+                                                             key=rank_dict.get, reverse=True), 1)}
+    return sorted([i for i in range(len(node_rank))], key = lambda x: node_rank[x])
+
+def get_ranks(graph):
+    # 0: degree
+    # 1: Katz_cetrality
+    # 2: bw_centrality
+    # 3: eigen_centrality
+    # 4: strength
+    # 5: crb
+    degree = np.array([len(graph.neighbours[i]) for i in range(graph.nodes)])
+    Katz_centrality = compute_katz(graph)
+    bw_centrality = compute_bw(graph)
+    eigen_centrality = compute_eigen(graph)
+    strength = compute_strength(graph)
+    crb = np.array([graph.node_weights[i] for i in range(graph.nodes)])
+    attr_no = 6
+    data = np.column_stack((degree, Katz_centrality, bw_centrality, eigen_centrality, strength, crb))
+    weight_mat = get_weights(data, graph.nodes)  # attribute weights
+    print("weights:",weight_mat)    
+    return topsis_ranking(convt_dict(graph), graph, weight_mat, normalize_mat(data).tolist())
 
 
-def edge_map(substrate, virtual, req_no, req_map, vne_list):
-    substrate_copy = copy.deepcopy(substrate)
-    all_paths = []
-    virtual_edges = []
-    for edge in virtual.edges:
-        if int(edge[0]) > int(edge[1]):
-            weight = virtual.edge_weights[edge]
-            virtual_edges.append(weight)
-            left_node = req_map.node_map[int(edge[0])]
-            right_node = req_map.node_map[int(edge[1])]
-            paths = substrate_copy.printAllPaths(
-                str(left_node), str(right_node), weight
-            )  # find all paths from src to dst
-            # print(paths)
-            if paths == []:
-                return None
-            all_paths.append(paths)
-    initial_population = select_random_path(
-        req_map, vne_list, req_no, all_paths, substrate_copy
-    )
-
-    return initial_population
-
-
-def tournament_selection(elite_population, vne_list, req_no):
-    random.shuffle(elite_population)
-    # sz = len(elite_population) // 2
-    # group1 = elite_population[:sz]
-    # group2 = elite_population[sz:]
-    # parent1 = temp_map(vne_list, req_no)
-    # # confirm for fitness value
-    # for j in range(len(group1)):
-    #     if parent1.fitness < group1[j].fitness:
-    #         parent1 = group1[j]
-    # parent2 = temp_map(vne_list, req_no)
-    # for j in range(len(group2)):
-    #     if parent2.fitness < group2[j].fitness:
-    #         parent2 = group2[j]
-    parent1, parent2 = (elite_population[0], elite_population[1]) # for random selection of parents
-    return parent1, parent2
+# weight calculation using shanon entropy method
+def get_weights(data, nodes):
+    column_sums = data.sum(axis=0)
+    normalized = (
+        data / column_sums[:, np.newaxis].transpose()
+    )  # normalizing the attribute values
+    normalized[np.isnan(normalized)] = 0
+    # normalized = np.zeros(data.shape)
+    # for i in range(data.shape[0]):
+    #     for j in range(data.shape[1]):
+    #         if column_sums[j] != 0:
+    #             normalized[i,j] = data[i,j]/column_sums[j]
+    E_j = np.zeros(normalized.shape)
+    # for i in range(normalized.shape[0]):
+    #     for j in range(normalized.shape[1]):
+    #         if normalized[i, j] != 0:
+    #             E_j[i, j] = normalized[i, j] * math.log(normalized[i, j])
+    E_j = normalized * np.log(normalized)
+    E_j[np.isnan(E_j)] = 0
+    column_sum = np.sum(E_j, axis=0)
+    k = 1 / np.log(nodes)
+    column_sum = -k * column_sum
+    column_sum = 1 - column_sum
+    E_j_column_sum = sum(column_sum)
+    w_j = column_sum / E_j_column_sum  # calculated weight array
+    print(f"Sum:{sum(w_j)}")
+    return w_j
 
 
-def elastic_crossover(
-    parent1, parent2, population_set, substrate, virtual, itr, elite_population
-):  # itr is inside loop number
-    if len(parent1.edge_map) <= 1:
-        return None, None
-    maxx = len(parent1.edge_map)
-    maxx = int(0.75*(maxx))
-    if maxx <= 1:
-        return None, None
-    parent2_copy = copy.deepcopy(parent2)
-    parent1_copy = copy.deepcopy(parent1)
-    parent1_pos = random.sample(
-        range(len(parent1.edge_map)), random.randint(1, maxx - 1)
-    )
-    for i in parent1_pos:
-        parent1.edge_map[i] = parent2_copy.edge_map[i]
-        parent1.path_cost[i] = parent2_copy.path_cost[i]
-    parent2_pos = random.sample(
-        range(len(parent1.edge_map)), random.randint(1, maxx - 1)
-    )
-    for i in parent2_pos:
-        parent2.edge_map[i] = parent1_copy.edge_map[i]
-        parent2.path_cost[i] = parent1_copy.path_cost[i]
-    if not check_compatibility(parent1, copy.deepcopy(substrate), virtual):
-        # parent1 = None
-        logging.warning(f"\t\t{itr}-could not add child1 due to incompatibility")
-    elif get_hashable_map(parent1) in population_set:
-        logging.warning(f"\t\t{itr}-Could not get distict child1")
-        # parent1 = None
-    else:
-        parent1.fitness = get_fitness(parent1, virtual)
-        parent1.edge_cost = sum(parent1.path_cost)
-        parent1.total_cost = parent1.node_cost + parent1.edge_cost
-        elite_population.append(parent1)
-        population_set.add(get_hashable_map(parent1))
-        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent1.edge_map}\tfitness: {parent1.fitness:.4f}\ttot_cost: {parent1.total_cost}")
-
-    if not check_compatibility(parent2, copy.deepcopy(substrate), virtual):
-        # parent2 = None
-        logging.warning(f"\t\t{itr}-could not add child2 due to incompatibility")
-    elif get_hashable_map(parent2) in population_set:
-        logging.warning(f"\t\t{itr}-could not get distict child2")
-        # parent2 = None
-    else:
-        parent1.fitness = get_fitness(parent1, virtual)
-        parent1.edge_cost = sum(parent1.path_cost)
-        parent1.total_cost = parent1.node_cost + parent1.edge_cost
-        elite_population.append(parent1)
-        population_set.add(get_hashable_map(parent1))
-        logging.info(f"\t\t\t{i}-Added Crossovered Child1 {parent2.edge_map}\tfitness: {parent2.fitness:.4f}\ttot_cost: {parent2.total_cost}")
-    return parent1, parent2
-
-
-def mutate(
-    child, substrate, population_set, virtual, itr, elite_population
-):  # itr is inside loop number
-    random_no = random.randint(0, len(child.edge_map) - 1)
-    sel_path = child.edge_map[random_no]
-    edge = (str(sel_path[0]), str(sel_path[-1]))
-    child.edge_map[random_no] = substrate.findPathFromSrcToDst(
-        edge[0], edge[1], child.edge_weight[random_no]
-    )
-    child.path_cost[random_no] = (len(child.edge_map[random_no])-1)*child.edge_weight[random_no]
-    if not check_compatibility(child, copy.deepcopy(substrate), virtual):
-        child = None
-        logging.warning(f"\t\t{itr}-could not add mutated_child due to incompatibility")
-    elif get_hashable_map(child) in population_set:
-        logging.warning(f"\t\t{itr}-Could not get distict mutated_child")
-        child = None
-    else:
-        child.edge_cost = sum(child.path_cost)
-        child.total_cost = (
-            child.node_cost + child.edge_cost
-        )
-        child.fitness = get_fitness(
-            child, virtual
-        )
-        elite_population.append(child)
-        population_set.add(get_hashable_map(child))
-        logging.info(f"\t\t\t{itr}-Added Muted Child {child.edge_map}\tfitness: {child.fitness:.4f}\ttot_cost: {child.total_cost}")
-    return child
-
-
-def get_hashable_map(chromosome):
-    temp_list = []
-    for path in chromosome.edge_map:
-        temp_list.append(tuple(path))
-    return tuple(temp_list)
-
-
-def check_compatibility(chromosome, substrate_copy, virtual):
-    for i, path in enumerate(chromosome.edge_map):
-        for j in range(1, len(path)):
-            edge = (str(path[j - 1]), str(path[j]))
-            if (
-                substrate_copy.edge_weights[edge]
-                < virtual.edge_weights[virtual.edges[i]]
-            ):
-                return False
-            else:
-                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
-                edge = (str(path[j]), str(path[j-1]))
-                substrate_copy.edge_weights[edge] -= virtual.edge_weights[virtual.edges[i]]
-    return True
-
-
-def import_elite(population):
-    population = sorted(population, key=lambda x: x.fitness, reverse=True)
-    if len(population) > 8:
-        population = population[:8]
-    population_set = set()
-    for i in population:
-        population_set.add(get_hashable_map(i))
-    return population, population_set
-
-
-def get_best_map(population):
-    return sorted(population, key=lambda x: x.fitness, reverse=True)[0]
-
-
-def substract_from_substrate(substrate, virtual, selected_map):
-    for i, node in enumerate(selected_map.node_map):
-        substrate.node_weights[node] -= virtual.node_weights[i]
-    for i, path in enumerate(selected_map.edge_map):
-        for j in range(1, len(path)):
-            substrate.edge_weights[
-                (str(path[j - 1]), str(path[j]))
-            ] -= selected_map.edge_weight[i]
-            substrate.edge_weights[
-                (str(path[j]), str(path[j-1 ]))
-            ] -= selected_map.edge_weight[i]
-
-
-def get_fitness(chromosome, virtual):
-    hop_count = 0
-    delay_sum = 0
-    wp = 1
-    wh = 1
-    wc = 1
-    for i in range(len(virtual.edges) // 2):
-        hop_count += len(chromosome.edge_map[i])
-        delay_sum += hop_count - 1
-    return (1 / chromosome.total_cost)* wc + (1 / hop_count)*wh + (1 / delay_sum)*wp
+if __name__ == "__main__":
+    substrate, vne_list = helper.read_pickle()
+    G = nx.Graph()
+    G.add_nodes_from(nx.path_graph(substrate.nodes))
+    for edge in substrate.edges:
+        G.add_edge(int(edge[0]), int(edge[1]), weight=substrate.edge_weights[edge])
+    phi = (1 + math.sqrt(substrate.nodes + 1)) / 2.0  # largest eigenvalue of adj matrix
+    print(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))
