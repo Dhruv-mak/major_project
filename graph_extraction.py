@@ -3,7 +3,7 @@ import pickle
 import sys
 import graph
 import graph_u
-from vne_u import create_vne
+from vne import create_vne
 
 
 class Extract:
