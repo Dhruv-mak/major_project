@@ -1,9 +1,8 @@
 import os
 import pickle
 import sys
-import graph
-import graph_u
-from vne import create_vne
+import graph_p
+from vne_p import create_vne
 
 
 class Extract:
@@ -19,18 +18,21 @@ class Extract:
         )
         with open(current, "rb") as f:
             data = pickle.load(f)
-        para = graph.Parameters(1000, 10000, 1000, 10000, 0, 100, 0, 100, 1, 1)  # Parameters for subsrate graph
+        para = graph_p.Parameters(100, 1000, 100, 1000, 0, 100, 0, 100, 1, 1)  # Parameters for subsrate graph BW ,CRB, Location,Delay
+        mean = 0.4
         try: 
-            substrate = graph_u.Graph(
+            substrate = graph_p.Graph(
                 len(data.scenario_list[0].substrate.nodes),
                 data.scenario_list[0].substrate.edges,
                 para,
+                mean,
             )
         except:
-            substrate = graph_u.Graph(
+            substrate = graph_p.Graph(
                 data.get("substrate").nodes,
                 data.get("substrate").edges,
                 para,
+                mean,
             )
         # vne_list = create_vne(no_requests = req_no)   # USE THIS STATEMENT FOR AUTOMATION & comment line no 28
         vne_list = create_vne()
