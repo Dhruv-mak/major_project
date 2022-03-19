@@ -7,6 +7,7 @@ import pickle
 import logging
 
 def main():
+    print(f"\t\t{datetime.now().time()}\tVRMap Started")
     start_time = datetime.now().time()
     bracket = []
     revenue = 0
@@ -22,18 +23,30 @@ def main():
     population = set()
     population, population_set = initialize_population(substrate, vne_list, index_chromosome)
     if population is None or len(population) == 0:
-        return  
+        output_dict = {
+            "revenue": -1,
+            "total_cost" : -1,
+            "accepted" : -1,
+            "total_request": -1,
+            "pre_resource": -1,
+            "post_resource": -1,
+            "avg_link": -1,
+            "avg_node": -1,
+            "avg_exec": datetime.combine(date.min, datetime.now().time()) - datetime.combine(date.min, datetime.now().time()),
+        }
+        print(f"\t\t{datetime.now().time()}\tVrmap completed\n")
+        return  output_dict
     
-    print("The node mappings are:")
+    #print("The node mappings are:")
     logging.info("\t\tThe initial node mappings are:")
     for i in population:
-        print_vne(bracket,i)
+        #print_vne(bracket,i)
         logging.info(f"\t\t{i.node_map}\ttotal cost: {i.total_cost}")
 
     elite_population = copy.deepcopy(population)
     if len(elite_population) > 1:
         for _ in range(2):
-            print("\n\n ITERATION", _)
+            #print("\n\n ITERATION", _)
             logging.info(f"\n\n")
             logging.info(f"\t\tITERATION {_}")
             i=0
@@ -56,9 +69,9 @@ def main():
                     if mutated_child2 is not None and mutated_child1 is not None:
                         if tuple(mutated_child1.node_map) not in population_set:
                             mutated_child1.total_cost = (mutated_child1.node_cost + mutated_child1.edge_cost)
-                            print(" mutated  child: ",end = "")
+                            #print(" mutated  child: ",end = "")
                             logging.info(f"\t\tmutated  child1: {mutated_child1.node_map}\ttotal cost: {mutated_child1.total_cost}")
-                            print_vne(bracket,mutated_child1)
+                            #print_vne(bracket,mutated_child1)
                             population.append(mutated_child1)
                             elite_population.append(mutated_child1)
                             population_set.add(tuple(mutated_child1.node_map))
@@ -68,9 +81,9 @@ def main():
                                 some_map = mutated_child1
                         if tuple(mutated_child2.node_map) not in population_set:
                             mutated_child2.total_cost = (mutated_child2.node_cost + mutated_child2.edge_cost)
-                            print(" mutated  child: ",end = "")
+                            #print(" mutated  child: ",end = "")
                             logging.info(f"\t\tmutated  child2: {mutated_child2.node_map}\ttotal cost: {mutated_child2.total_cost}")
-                            print_vne(bracket,mutated_child2)
+                            #print_vne(bracket,mutated_child2)
                             population.append(mutated_child2)
                             elite_population.append(mutated_child2)
                             population_set.add(tuple(mutated_child2.node_map))
@@ -80,9 +93,9 @@ def main():
                                 some_map = mutated_child2
                 elif offspring1 != parent1 and offspring2 != parent2:
                     if tuple(offspring1.node_map) not in population_set:
-                        print("croosover child: ",end = "")
+                        #print("croosover child: ",end = "")
                         logging.info(f"\t\tcrossovered  child1: {offspring1.node_map}\ttotal cost: {offspring1.total_cost}")
-                        print_vne(bracket,offspring1)
+                        #print_vne(bracket,offspring1)
                         population.append(offspring1)
                         elite_population.append(offspring1)
                         population_set.add(tuple(offspring1.node_map))
@@ -91,9 +104,9 @@ def main():
                         if some_map.total_cost > offspring1.total_cost:
                             some_map = offspring1
                     if tuple(offspring2.node_map) not in population_set:
-                        print("croosover child: ",end = "")
+                        #print("croosover child: ",end = "")
                         logging.info(f"\t\tcrossovered  child2: {offspring2.node_map}\ttotal cost: {offspring2.total_cost}")
-                        print_vne(bracket,offspring2)
+                        #print_vne(bracket,offspring2)
                         population.append(offspring2)
                         elite_population.append(offspring2)
                         population_set.add(tuple(offspring2.node_map))
@@ -110,13 +123,13 @@ def main():
 
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
-    print(duration)
+    #print(duration)
 
-    print("\n\nELITE POPULATION")
+    #print("\n\nELITE POPULATION")
     logging.info(f"\n\n")
     logging.info(f"\t\tELITE POPULATION")
     for i in elite_population:
-        print_vne(bracket,i)
+        #print_vne(bracket,i)
         logging.info(f"\t\t{i.node_map}\ttotal cost: {i.total_cost}")
 
     logging.info(f"\n\n")
@@ -168,23 +181,36 @@ def main():
     logging.info(f"\t\tAverage CRB utilization {(selected_map.node_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
   
-    print(f"\nThe selected map is ",end="")
-    print_vne(bracket,selected_map)
-    print(f"\n\t\tThe revenue is {revenue}\tTotal cost is {tot_cost}")
-    print(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
-    print(f"\t\tTotal number of requests embedded is {len(vne_list)} out of {len(vne_list)}")
-    print(f"\t\tEmbedding ratio is {(len(vne_list)/len(vne_list))*100:.4f}%")
-    print(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
-    print(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
-    print(f"\t\tAverage link utilization {(selected_map.edge_cost/pre_resource_edgecost)*100:.4f}%")
-    print(f"\t\tAverage node utilization {(selected_map.node_cost/pre_resource_nodecost)*100:.4f}%")
-    print(f"\t\tTotal Duration {duration} (HH:MM:SS)")
-    print(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
-    print("\nLog file is also generated in the current directory with file name vrmap.log\n")
+    #print(f"\nThe selected map is ",end="")
+    #print_vne(bracket,selected_map)
+    #print(f"\n\t\tThe revenue is {revenue}\tTotal cost is {tot_cost}")
+    #print(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
+    #print(f"\t\tTotal number of requests embedded is {len(vne_list)} out of {len(vne_list)}")
+    #print(f"\t\tEmbedding ratio is {(len(vne_list)/len(vne_list))*100:.4f}%")
+    #print(f"\t\tAvailabe substrate resources before mapping is {pre_resource}")
+    #print(f"\t\tConsumed substrate resources after mapping is {pre_resource - post_resource}")
+    #print(f"\t\tAverage link utilization {(selected_map.edge_cost/pre_resource_edgecost)*100:.4f}%")
+    #print(f"\t\tAverage node utilization {(selected_map.node_cost/pre_resource_nodecost)*100:.4f}%")
+    #print(f"\t\tTotal Duration {duration} (HH:MM:SS)")
+    #print(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
+    #print("\nLog file is also generated in the current directory with file name vrmap.log\n")
 
     # output = {"substrate": substrate, "vne_list" : vne_list, "index_chromosome": index_chromosome, "selected_map": selected_map}
     # pickle_file = open("mapping.pickle", "wb")
     # pickle.dump(output, pickle_file)
+    output_dict = {
+        "revenue": revenue,
+        "total_cost" : tot_cost,
+        "accepted" : len(vne_list),
+        "total_request": len(vne_list),
+        "pre_resource": pre_resource,
+        "post_resource": post_resource,
+        "avg_link": (selected_map.edge_cost/pre_resource_edgecost)*100,
+        "avg_node": (selected_map.node_cost/pre_resource_nodecost)*100,
+        "avg_exec": (duration),
+    }
+    print(f"\t\t{datetime.now().time()}\tVRMap completed\n")
+    return output_dict
 
 if __name__ == "__main__":
     main()

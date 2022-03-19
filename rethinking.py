@@ -7,6 +7,7 @@ from rethinking_helper import *
 
 
 def main():
+    print(f"\t\t{datetime.now().time()}\tRethinking started")
     substrate, vne_list = helper.read_pickle()
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="rethinking.log", filemode="w", level=logging.INFO)
@@ -57,7 +58,11 @@ def main():
 
     req_order = list(range(len(vne_list)))
     random.shuffle(req_order)
+    cnt = 0
     for req_no in req_order:
+        cnt += 1
+        if cnt%5==0:
+            print(f"\t\t\t{cnt}")
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is None:
             logging.warning(f"\t\tNode mapping not possible for req no {req_no}\n\n\n")
@@ -206,16 +211,14 @@ def main():
         date.min, start_time
     )
 
-    print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
-    print(f"Total number of requests embedded is {accepted}")
-    print(f"Embedding ratio is {accepted/len(vne_list)}")
-    print(f"Availabe substrate resources before mapping is {pre_resource}")
-    print(
-        f"Consumed substrate resources after mapping is {pre_resource - post_resource}"
-    )
-    print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
-    print(f"Average node utilization {no_cost/pre_resource_nodecost}")
-    print(f"Average execution time {duration/len(vne_list)}")
+    #print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
+    #print(f"Total number of requests embedded is {accepted}")
+    #print(f"Embedding ratio is {accepted/len(vne_list)}")
+    #print(f"Availabe substrate resources before mapping is {pre_resource}")
+    #print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
+    #print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
+    #print(f"Average node utilization {no_cost/pre_resource_nodecost}")
+    #print(f"Average execution time {duration/len(vne_list)}")
 
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
     logging.info(
@@ -233,7 +236,19 @@ def main():
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     if tot_cost == 0:
         logging.error(f"\t\tCouldn't embedd any request")
-        return
+        output_dict = {
+            "revenue": -1,
+            "total_cost": -1,
+            "accepted": -1,
+            "total_request": -1,
+            "pre_resource": -1,
+            "post_resource": -1,
+            "avg_link": -1,
+            "avg_node": -1,
+            "avg_exec": (duration),
+        }
+        print(f"\t\t{datetime.now().time()}\trethinking completed\n")
+        return output_dict
 
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
@@ -261,6 +276,7 @@ def main():
         "avg_node": (no_cost / pre_resource_nodecost) * 100,
         "avg_exec": (duration),
     }
+    print(f"\t\t{datetime.now().time()}\tRethinking completed\n")
     return output_dict
 
 

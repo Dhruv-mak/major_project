@@ -79,6 +79,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     return True
     
 def main():
+    print(f"\t\t{datetime.now().time()}\tVikor Started")
     substrate, vne_list = helper.read_pickle()
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="vikor.log",filemode="w", level=logging.INFO)
@@ -125,19 +126,19 @@ def main():
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is  None:
-            print(f"Node mapping not possible for req no {req_no}")
+            #print(f"Node mapping not possible for req no {req_no}")
             logging.warning(f"\tNode mapping not possible for req no {req_no}\n")
             continue
         req_map = temp_map(vne_list, req_no, req_map)
         if not edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list):
-            print(f"Edge mapping not possible for req no {req_no}")
+            #print(f"Edge mapping not possible for req no {req_no}")
             logging.warning(f"\tEdge mapping not possible for req no {req_no}\n")
             continue
         accepted += 1
         for ed in req_map.edge_map:
             path_cnt += len(req_map.edge_map[ed])
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
-        print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
+        #print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with revenue {sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2} and total cost {req_map.total_cost}\n")
         curr_map[req_no] = req_map
         revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
@@ -167,14 +168,14 @@ def main():
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
     
-    print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
-    print(f"Total number of requests embedded is {accepted}")
-    print(f"Embedding ratio is {accepted/len(vne_list)}")
-    print(f"Availabe substrate resources before mapping is {pre_resource}")
-    print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
-    print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
-    print(f"Average node utilization {no_cost/pre_resource_nodecost}")
-    print(f"Average execution time {duration/len(vne_list)}")
+    #print(f"\n\nThe revenue is {revenue} and total cost is {tot_cost}")
+    #print(f"Total number of requests embedded is {accepted}")
+    #print(f"Embedding ratio is {accepted/len(vne_list)}")
+    #print(f"Availabe substrate resources before mapping is {pre_resource}")
+    #print(f"Consumed substrate resources after mapping is {pre_resource - post_resource}")
+    #print(f"Average link utilization {ed_cost/pre_resource_edgecost}")
+    #print(f"Average node utilization {no_cost/pre_resource_nodecost}")
+    #print(f"Average execution time {duration/len(vne_list)}")
 
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK AFTER MAPPING VNRs")
     logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
@@ -190,7 +191,19 @@ def main():
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     if tot_cost == 0:
         logging.error(f"\t\tCouldn't embedd any request")
-        return
+        output_dict = {
+            "revenue": -1,
+            "total_cost": -1,
+            "accepted": -1,
+            "total_request": -1,
+            "pre_resource": -1,
+            "post_resource": -1,
+            "avg_link": -1,
+            "avg_node": -1,
+            "avg_exec": (duration),
+        }
+        print(f"\t\t{datetime.now().time()}\tVikor completed\n")
+        return output_dict
 
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
@@ -219,6 +232,7 @@ def main():
         "avg_node": (no_cost/pre_resource_nodecost)*100,
         "avg_exec": (duration),
     }
+    print(f"\t\t{datetime.now().time()}\tVikor completed\n")
     return output_dict
 
 

@@ -44,7 +44,7 @@ def initialize_population(substrate, vne_list, index_chromosome):
         itr += 1
         if check_node_map(copy.deepcopy(index_chromosome), map, copy.deepcopy(substrate)) and check_edge_map(map, copy.deepcopy(substrate), vne_list):
             p += 1
-            print(f"{map.node_map}\n\n")
+            print(f"\t\t\t{map.node_map}")
             map.total_cost = map.node_cost + map.edge_cost
             if tuple(map.node_map) not in population_set:
                 population.append(map)
@@ -53,8 +53,8 @@ def initialize_population(substrate, vne_list, index_chromosome):
                 some_map = find_map(map)
                 if some_map.total_cost > map.total_cost:
                     some_map = map
-        if itr>10000:
-            print(f"Don't have enough populations required 8 got {p}")
+        if itr>100:
+            print(f"\t\t\tDon't have enough populations required 8 got {p}")
             logging.error(f"\t\tDon't have enough populations required 8 got {p}")
             return None, None
     return population, population_set

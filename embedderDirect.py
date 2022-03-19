@@ -85,8 +85,7 @@ def countIntermidateLinks(parent,node1,node2):
 def findShortestPath(node1,node2,graph,linkBandWidth,reqLinkBandWidth,
                      subsRank,nodeLoc,linkEmbedding, maxVneDelay):
     log.info("KK Find shrotest path graph")
-    print(node1,node2,graph,linkBandWidth,reqLinkBandWidth,
-                     subsRank,nodeLoc,linkEmbedding, maxVneDelay)
+    #print(node1,node2,graph,linkBandWidth,reqLinkBandWidth,subsRank,nodeLoc,linkEmbedding, maxVneDelay)
     s = set()
     arr = list()
     parent = dict()
@@ -173,6 +172,7 @@ def update_sn_crb(node_crb, vne_crb, map_dict):
             node_crb[map_dict[node]] -= vne_crb[node]
     except Exception as err:
         print (err)
+        pass
 
 def update_sn_bandwidth(node_bandwidth, vne_bandwidth, map_dict):
 
@@ -183,6 +183,7 @@ def update_sn_bandwidth(node_bandwidth, vne_bandwidth, map_dict):
                 node_bandwidth[n_link[::-1]] -= vne_bandwidth[vn_link]
     except Exception as err:
         print (err)
+        pass
 
 def rankingMapping(graph, nodeLoc, linkBandWidth, nodeCRB,vneRequest,vneLoc,
                    vneLinkBandWidth, vneCRB, vneLR, vneDelay, page_rank):
@@ -192,7 +193,7 @@ def rankingMapping(graph, nodeLoc, linkBandWidth, nodeCRB,vneRequest,vneLoc,
     log.info("this is substrate network CRB",nodeCRB)
     # subsRank = pageRank.calRank(graph, nodeLoc, linkBandWidth, nodeCRB)
     # log.info("this is substrate network rank")
-    # printRank(subsRank)
+    # #printRank(subsRank)
     log.info("this is vne",vneRequest)
     log.info("this is vne location",vneLoc)
     log.info("this is vne linkBandWidth",vneLinkBandWidth)
@@ -216,7 +217,7 @@ def page_rank_mapping(graph, nodeLoc, linkBandWidth, nodeCRB,
     subsRank = pageRank.calRank(graph, nodeLoc, linkBandWidth, nodeCRB, delay=1)
     vneRank = pageRank.calRank(vneRequest, vneLoc, vneLinkBandWidth, vneCRB,
                                delay=vneDelay)
-    # printRank(vneRank)
+    # #printRank(vneRank)
     subsSort = nodeSort(subsRank)
     vneSort = nodeSort(vneRank)
     vneEmbedding = dict()
@@ -226,10 +227,10 @@ def page_rank_mapping(graph, nodeLoc, linkBandWidth, nodeCRB,
     #       "network embedding")
     log.info("\nthis is substrate network rank")
     log.info("-" * 30)
-    printRank(subsRank)
+    #printRank(subsRank)
     log.info("\nthis is vne Rank")
     log.info("-" * 30)
-    printRank(vneRank)
+    #printRank(vneRank)
     flag = True
     nodeCRBTemp = _copy(nodeCRB)
     vneCRBTemp = _copy(vneCRB)
@@ -285,7 +286,7 @@ def node_rank_mapping(graph, nodeLoc, linkBandWidth, nodeCRB,
     subsRank = nodeRankCal.calRank(graph, nodeLoc, linkBandWidth, nodeCRB,
                                    delay=1)
     vneRank = nodeRankCal.calRank(vneRequest,vneLoc, vneLinkBandWidth, vneCRB, delay=vneDelay)
-    # printRank(vneRank)
+    # #printRank(vneRank)
     subsSort = nodeSort(subsRank)
     vneSort = nodeSort(vneRank)
     vneEmbedding = dict()
@@ -295,10 +296,10 @@ def node_rank_mapping(graph, nodeLoc, linkBandWidth, nodeCRB,
     #       "network embedding")
     log.info("\nthis is substrate network rank")
     log.info("-" * 30)
-    printRank(subsRank)
+    #printRank(subsRank)
     log.info("\nthis is vne Rank")
     log.info("-" * 30)
-    printRank(vneRank)
+    #printRank(vneRank)
     flag = True
     nodeCRBTemp = _copy(nodeCRB)
     vneCRBTemp = _copy(vneCRB)
@@ -455,7 +456,7 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
             failed_vne += 1
             log.info('Error - Embedding is skipped as No shortest path found')
         else:
-            printEmbedding(embeding_out[1][0])
+            #printEmbedding(embeding_out[1][0])
             update_sn_crb(snCRB, vneCRB, embeding_out[1][0])
 
             link_map_dict = printLinkEmbedding(embeding_out[1][1])
@@ -505,7 +506,18 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     log.info(f"The revenue is {total_vne_revenue} and total cost is {total_vne_cost}")
     if total_vne_cost == 0:
         logging.error(f"\t\tCouldn't embedd any request")
-        return
+        output_dict = {
+            "revenue": -1,
+            "total_cost": -1,
+            "accepted": -1,
+            "total_request": -1,
+            "pre_resource": -1,
+            "post_resource": -1,
+            "avg_link": -1,
+            "avg_node": -1,
+            "avg_exec": (duration),
+        }
+        return output_dict
     log.info(f"The revenue to cost ratio is {(total_vne_revenue/total_vne_cost)*100:.4f}%")
     log.info(f"Total {total_vne-failed_vne} requests are embedded out of {total_vne}")
     log.info(f"Embedding ratio is {((total_vne-failed_vne)/total_vne )*100:.4f}%\n")
@@ -525,6 +537,18 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     if page_rank:
         log.info("\n\n\n\n\n\n\n\n")
 
+    output_dict = {
+        "revenue": total_vne_revenue,
+        "total_cost" : total_vne_cost,
+        "accepted" : total_vne-failed_vne,
+        "total_request": total_vne,
+        "pre_resource": pre_sub_nodecost+pre_sub_edgecost,
+        "post_resource": post_sub_nodecost+post_sub_edgecost,
+        "avg_link": (ed_cost/pre_sub_edgecost)*100,
+        "avg_node": (no_cost/pre_sub_nodecost)*100*100,
+        "avg_exec": (duration),
+    }
+    return output_dict
 
 def generateReqDelay(requests):
     for request in requests:
@@ -575,10 +599,11 @@ def calling(start_time, sn, vneRequests, substrate, vne_list):
     _snLinkBandWidth = copy.deepcopy(snLinkBandWidth)
     _snCRB = copy.deepcopy(snCRB)
     _vneList = copy.deepcopy(vneList)
-    embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
+    output1 = embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                        page_rank=True)
-    embed_rank_mapping(start_time, _sn, _snLoc, _snLinkBandWidth, _snCRB, _vneList,
+    output2 = embed_rank_mapping(start_time, _sn, _snLoc, _snLinkBandWidth, _snCRB, _vneList,
                        page_rank=False)
+    return (output1, output2)
 
 
 def generate_sn_rank(sn):
@@ -611,8 +636,8 @@ if __name__=="__main__":
     #     if(i[1] == -1):
     #         log.info("No embedding found")
     #         continue
-    #     printEmbedding(i[1][0])
-    #     printLinkEmbedding(i[1][1])
+    #     #printEmbedding(i[1][0])
+    #     #printLinkEmbedding(i[1][1])
 
 
 
