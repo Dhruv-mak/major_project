@@ -1,7 +1,7 @@
 import networkx as nx
 import graph_p
 from graph_p import Parameters
-from randomPoissonDistribution import randomPoissonNumber
+from randomPoissonDistribution import randomPoissonNumber_rand as randomPoissonNumber
 
 
 def create_vne(min_nodes=2, max_nodes=5, no_requests=300, probability=0.4, mean=0.4):
