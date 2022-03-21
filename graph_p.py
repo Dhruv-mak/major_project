@@ -1,4 +1,4 @@
-from randomPoissonDistribution import randomPoissonNumber
+from randomPoissonDistribution import randomPoissonNumber_rand as randomPoissonNumber
 import random
 import copy
 
