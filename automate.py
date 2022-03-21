@@ -5,6 +5,7 @@ from greedy import main as greedy
 from parser import main as parser
 from vrmap import main as vrmap
 from rethinking import main as rethinking
+from topsis import main as topsis
 import graph_extraction
 import graph_extraction_uniform
 import graph_extraction_poisson
@@ -57,14 +58,15 @@ def main(for_automate):
         sleep(tot*1)
         vikor_out = vikor()
         sleep(tot*1)
+        topsis_out = topsis()
+        sleep(tot*1)
         parser_out = parser()
         sleep(tot*2)
         vrmap_out = vrmap()
         sleep(tot*7)
         rethinking_out = rethinking()
         sleep(tot*15)
-        # for key, value in gred_out.items():
-        #     output_dict[key].append(value)
+        
         output_dict["algorithm"].append('GREEDY')
         output_dict["revenue"].append(gred_out['revenue'])
         output_dict["total_cost"].append(gred_out['total_cost'])
@@ -79,8 +81,7 @@ def main(for_automate):
         output_dict["avg_node"].append(gred_out['avg_node'])
         output_dict["avg_exec"].append(gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'])
         
-        # for key, value in vikor_out.items():
-        #     output_dict[key].append(value)
+        
         output_dict["algorithm"].append('VIKOR')
         output_dict["revenue"].append(vikor_out['revenue'])
         output_dict["total_cost"].append(vikor_out['total_cost'])
@@ -95,17 +96,19 @@ def main(for_automate):
         output_dict["avg_node"].append(vikor_out['avg_node'])
         output_dict["avg_exec"].append(vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'])
 
-        # if vikor_out['revenue']>gred_out['revenue']:
-        #     rev_cnt += 1
-        
-        # if (vikor_out['revenue']/vikor_out['total_cost'])*100 >(gred_out['revenue']/gred_out['total_cost'])*100:
-        #     rct_cnt += 1
-        
-        # if vikor_out['accepted']>gred_out['accepted']:
-        #     acc_cnt += 1
-    
-        # if vikor_out['avg_exec']<gred_out['avg_exec']:
-        #     exec_cnt += 1
+        output_dict["algorithm"].append('TOPSIS')
+        output_dict["revenue"].append(topsis_out['revenue'])
+        output_dict["total_cost"].append(topsis_out['total_cost'])
+        output_dict["revenuetocostratio"].append((topsis_out['revenue']/topsis_out['total_cost'])*100)
+        output_dict["accepted"].append(topsis_out['accepted'])
+        output_dict["total_request"].append(topsis_out['total_request'])
+        output_dict["embeddingratio"].append((topsis_out['accepted']/topsis_out['total_request'])*100)
+        output_dict["pre_resource"].append(topsis_out['pre_resource'])
+        output_dict["post_resource"].append(topsis_out['post_resource'])
+        output_dict["consumed"].append(topsis_out['pre_resource']-topsis_out['post_resource'])
+        output_dict["avg_link"].append(topsis_out['avg_link'])
+        output_dict["avg_node"].append(topsis_out['avg_node'])
+        output_dict["avg_exec"].append(topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'])
         
         output_dict["algorithm"].append('PAGERANK-STABLE')
         output_dict["revenue"].append(parser_out[0]['revenue'])
@@ -134,7 +137,6 @@ def main(for_automate):
         output_dict["avg_link"].append(parser_out[1]['avg_link'])
         output_dict["avg_node"].append(parser_out[1]['avg_node'])
         output_dict["avg_exec"].append(parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request'])
-
 
         output_dict["algorithm"].append('VRMAP')
         output_dict["revenue"].append(vrmap_out['revenue'])
@@ -179,7 +181,16 @@ def main(for_automate):
         output_dict["avg_exec"].append('')
     
 
+#######################################################################################
+#######################################################################################
+##                                                                                   ##
+##       IMPORTANT - CLOSE test.xlsx (excel file) IF OPEN BEFORE RUNNING THIS        ##
+##                                                                                   ##
+#######################################################################################
+#######################################################################################
+
 if __name__ == "__main__":
+    print("\nRandom Extraction\n")
     main(graph_extraction.for_automate)
     
     for _ in range(3):
@@ -196,7 +207,8 @@ if __name__ == "__main__":
         output_dict["avg_link"].append('')
         output_dict["avg_node"].append('')
         output_dict["avg_exec"].append('')
-    
+
+    print("\nUNIFORM Extraction\n")    
     main(graph_extraction_uniform.for_automate)
     
     for _ in range(3):
@@ -214,6 +226,8 @@ if __name__ == "__main__":
         output_dict["avg_node"].append('')
         output_dict["avg_exec"].append('')
     
+    print("\nPOISSON Extraction\n")
     main(graph_extraction_poisson.for_automate)
+    
     excel = pd.DataFrame(output_dict)
     excel.to_excel("test.xlsx")
