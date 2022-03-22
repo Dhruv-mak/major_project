@@ -36,8 +36,11 @@ output_dict = {
         "pre_resource": [],
         "post_resource": [],
         "consumed":[],
+        "avg_bw": [],
+        "avg_crb": [],
         "avg_link": [],
         "avg_node": [],
+        "avg_path": [],
         "avg_exec": [],
     }
 
@@ -47,7 +50,7 @@ acc_cnt=0
 exec_cnt=0
 def main(for_automate):
     tot=0
-    ls = [5, 12, 38, 68, 82, 99, 104]
+    ls = [5]
     for req_no in ls:
         tot += 1
         print(f"\n\treq_no: {req_no}\n")
@@ -77,8 +80,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(gred_out['pre_resource'])
         output_dict["post_resource"].append(gred_out['post_resource'])
         output_dict["consumed"].append(gred_out['pre_resource']-gred_out['post_resource'])
+        output_dict["avg_bw"].append(gred_out['avg_bw'])
+        output_dict["avg_crb"].append(gred_out['avg_crb'])
         output_dict["avg_link"].append(gred_out['avg_link'])
         output_dict["avg_node"].append(gred_out['avg_node'])
+        output_dict["avg_path"].append(gred_out['avg_path'])
         output_dict["avg_exec"].append(gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'])
         
         
@@ -92,8 +98,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(vikor_out['pre_resource'])
         output_dict["post_resource"].append(vikor_out['post_resource'])
         output_dict["consumed"].append(vikor_out['pre_resource']-vikor_out['post_resource'])
+        output_dict["avg_bw"].append(vikor_out['avg_bw'])
+        output_dict["avg_crb"].append(vikor_out['avg_crb'])
         output_dict["avg_link"].append(vikor_out['avg_link'])
         output_dict["avg_node"].append(vikor_out['avg_node'])
+        output_dict["avg_path"].append(vikor_out['avg_path'])
         output_dict["avg_exec"].append(vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'])
 
         output_dict["algorithm"].append('TOPSIS')
@@ -106,8 +115,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(topsis_out['pre_resource'])
         output_dict["post_resource"].append(topsis_out['post_resource'])
         output_dict["consumed"].append(topsis_out['pre_resource']-topsis_out['post_resource'])
+        output_dict["avg_bw"].append(topsis_out['avg_bw'])
+        output_dict["avg_crb"].append(topsis_out['avg_crb'])
         output_dict["avg_link"].append(topsis_out['avg_link'])
         output_dict["avg_node"].append(topsis_out['avg_node'])
+        output_dict["avg_path"].append(topsis_out['avg_path'])
         output_dict["avg_exec"].append(topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'])
         
         output_dict["algorithm"].append('PAGERANK-STABLE')
@@ -120,8 +132,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(parser_out[0]['pre_resource'])
         output_dict["post_resource"].append(parser_out[0]['post_resource'])
         output_dict["consumed"].append(parser_out[0]['pre_resource']-parser_out[0]['post_resource'])
+        output_dict["avg_bw"].append(parser_out[0]['avg_bw'])
+        output_dict["avg_crb"].append(parser_out[0]['avg_crb'])
         output_dict["avg_link"].append(parser_out[0]['avg_link'])
         output_dict["avg_node"].append(parser_out[0]['avg_node'])
+        output_dict["avg_path"].append(parser_out[0]['avg_path'])
         output_dict["avg_exec"].append(parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request'])
 
         output_dict["algorithm"].append('PAGERANK-DIRECT')
@@ -134,8 +149,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(parser_out[1]['pre_resource'])
         output_dict["post_resource"].append(parser_out[1]['post_resource'])
         output_dict["consumed"].append(parser_out[1]['pre_resource']-parser_out[1]['post_resource'])
+        output_dict["avg_bw"].append(parser_out[1]['avg_bw'])
+        output_dict["avg_crb"].append(parser_out[1]['avg_crb'])
         output_dict["avg_link"].append(parser_out[1]['avg_link'])
         output_dict["avg_node"].append(parser_out[1]['avg_node'])
+        output_dict["avg_path"].append(parser_out[1]['avg_path'])
         output_dict["avg_exec"].append(parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request'])
 
         output_dict["algorithm"].append('VRMAP')
@@ -148,8 +166,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(vrmap_out['pre_resource'])
         output_dict["post_resource"].append(vrmap_out['post_resource'])
         output_dict["consumed"].append(vrmap_out['pre_resource']-vrmap_out['post_resource'])
+        output_dict["avg_bw"].append(vrmap_out['avg_bw'])
+        output_dict["avg_crb"].append(vrmap_out['avg_crb'])
         output_dict["avg_link"].append(vrmap_out['avg_link'])
         output_dict["avg_node"].append(vrmap_out['avg_node'])
+        output_dict["avg_path"].append(vrmap_out['avg_path'])
         output_dict["avg_exec"].append(vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request'])
 
         output_dict["algorithm"].append('RETHINKING')
@@ -162,8 +183,11 @@ def main(for_automate):
         output_dict["pre_resource"].append(rethinking_out['pre_resource'])
         output_dict["post_resource"].append(rethinking_out['post_resource'])
         output_dict["consumed"].append(rethinking_out['pre_resource']-rethinking_out['post_resource'])
+        output_dict["avg_bw"].append(rethinking_out['avg_bw'])
+        output_dict["avg_crb"].append(rethinking_out['avg_crb'])
         output_dict["avg_link"].append(rethinking_out['avg_link'])
         output_dict["avg_node"].append(rethinking_out['avg_node'])
+        output_dict["avg_path"].append(rethinking_out['avg_path'])
         output_dict["avg_exec"].append(rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request'])
 
         output_dict["algorithm"].append('')
@@ -176,8 +200,11 @@ def main(for_automate):
         output_dict["pre_resource"].append('')
         output_dict["post_resource"].append('')
         output_dict["consumed"].append('')
+        output_dict["avg_bw"].append('')
+        output_dict["avg_crb"].append('')
         output_dict["avg_link"].append('')
         output_dict["avg_node"].append('')
+        output_dict["avg_path"].append('')
         output_dict["avg_exec"].append('')
     
 
@@ -204,8 +231,11 @@ if __name__ == "__main__":
         output_dict["pre_resource"].append('')
         output_dict["post_resource"].append('')
         output_dict["consumed"].append('')
+        output_dict["avg_bw"].append('')
+        output_dict["avg_crb"].append('')
         output_dict["avg_link"].append('')
         output_dict["avg_node"].append('')
+        output_dict["avg_path"].append('')
         output_dict["avg_exec"].append('')
 
     print("\nUNIFORM Extraction\n")    
@@ -222,8 +252,11 @@ if __name__ == "__main__":
         output_dict["pre_resource"].append('')
         output_dict["post_resource"].append('')
         output_dict["consumed"].append('')
+        output_dict["avg_bw"].append('')
+        output_dict["avg_crb"].append('')
         output_dict["avg_link"].append('')
         output_dict["avg_node"].append('')
+        output_dict["avg_path"].append('')
         output_dict["avg_exec"].append('')
     
     print("\nPOISSON Extraction\n")

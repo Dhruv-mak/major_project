@@ -196,8 +196,11 @@ def main():
             "total_request": -1,
             "pre_resource": -1,
             "post_resource": -1,
+            "avg_bw": -1,
+            "avg_crb": -1,
             "avg_link": -1,
             "avg_node": -1,
+            "avg_path": -1,
             "avg_exec": (duration),
         }
         print(f"\t\t{datetime.now().time()}\tgreedy completed\n")
@@ -225,8 +228,11 @@ def main():
         "total_request": len(vne_list),
         "pre_resource": pre_resource,
         "post_resource": post_resource,
-        "avg_link": (ed_cost/pre_resource_edgecost)*100,
-        "avg_node": (no_cost/pre_resource_nodecost)*100,
+        "avg_bw": (ed_cost/pre_resource_edgecost)*100,
+        "avg_crb": (ed_cost/pre_resource_edgecost)*100,
+        "avg_link": (utilized_links/len(substrate.edge_weights))*100,
+        "avg_node": (utilized_nodes/len(substrate.node_weights))*100,
+        "avg_path": (path_cnt/accepted),
         "avg_exec": (duration/len(vne_list)),
     }
     print(f"\t\t{datetime.now().time()}\tGreedy completed\n")
