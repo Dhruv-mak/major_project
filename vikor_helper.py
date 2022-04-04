@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 import helper
+import logging
 np.seterr(divide='ignore', invalid='ignore')    #ignores the division by zero (OR value tending to zero)
 
 def divide(a, b):
@@ -38,7 +39,8 @@ def compute_katz(graph):
     # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
     centrality = nx.katz_centrality(G)  #Time complexity - O(V^2)*max_iteration => O(V^2)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
-    print(centrality)
+    # print(f"\n centrality : \t{centrality}")
+    logging.info(f"\n centrality : \t{centrality}")
     return centrality
 
 
@@ -108,7 +110,8 @@ def get_ranks(graph):
     ranks = sorted(  # array containing weights
         [i for i in range(graph.nodes)], key=lambda x: rank_mat[x, 2 * attr_no + 2]
     )
-    print(ranks)
+    # print(f"\n Ranks of nodes: \t{ranks}\n")
+    logging.info(f"\n Ranks of nodes: \t{ranks}\n")
     return ranks
 
 
@@ -136,4 +139,5 @@ if __name__ == "__main__":
     for edge in substrate.edges:
         G.add_edge(int(edge[0]), int(edge[1]), weight=substrate.edge_weights[edge])
     phi = (1 + math.sqrt(substrate.nodes + 1)) / 2.0  # largest eigenvalue of adj matrix
-    print(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))
+    
+    print(f"\n Katz Centrality : \t{(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))}\n")

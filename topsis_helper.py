@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 import helper
+import logging
 np.seterr(divide='ignore', invalid='ignore')    #ignores the division by zero (OR value tending to zero)
 
 def divide(a, b):
@@ -137,7 +138,7 @@ def get_ranks(graph):
     attr_no = 6
     data = np.column_stack((degree, Katz_centrality, bw_centrality, eigen_centrality, strength, crb))
     weight_mat = get_weights(data, graph.nodes)  # attribute weights
-    print("weights:",weight_mat)    
+    logging.info(f"\t\tweights: {weight_mat}")    
     return topsis_ranking(convt_dict(graph), graph, weight_mat, normalize_mat(data).tolist())
 
 
@@ -166,7 +167,7 @@ def get_weights(data, nodes):
     column_sum = 1 - column_sum
     E_j_column_sum = sum(column_sum)
     w_j = column_sum / E_j_column_sum  # calculated weight array
-    print(f"Sum:{sum(w_j)}")
+    logging.info(f"\t\tSum:{sum(w_j)}")
     return w_j
 
 

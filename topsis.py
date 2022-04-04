@@ -4,7 +4,6 @@ import sys
 import copy
 from datetime import datetime, date
 import logging
-import math
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -18,9 +17,9 @@ class temp_map:
 def node_map(substrate, virtual, req_no):
     map = [0 for x in range(virtual.nodes)]
     sorder = get_ranks(substrate) # ascending order
-    print(f"Ranks for substrate {sorder}")
+    logging.info(f"\t\tRanks for substrate {sorder}")
     vorder = get_ranks(virtual) 
-    print(f"Ranks for vne {vorder}")
+    logging.info(f"\t\tRanks for vne {vorder}")
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
@@ -207,18 +206,7 @@ def main():
     logging.info(f"\t\tAverage CRB utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
     # logging.shutdown()
-    output_dict = {
-        "revenue": revenue,
-        "total_cost" : tot_cost,
-        "accepted" : accepted,
-        "total_request": len(vne_list),
-        "pre_resource": pre_resource,
-        "post_resource": post_resource,
-        "avg_link": (ed_cost/pre_resource_edgecost)*100,
-        "avg_node": (no_cost/pre_resource_nodecost)*100,
-        "avg_exec": (duration),
-    }
-    return output_dict
+
 
 
 if __name__ == '__main__':

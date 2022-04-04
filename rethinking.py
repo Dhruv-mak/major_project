@@ -60,6 +60,7 @@ def main():
     for req_no in req_order:
         req_map = node_map(copy.deepcopy(substrate), vne_list[req_no], req_no)
         if req_map is None:
+            print(f"\t\tNode mapping not possible for req no {req_no}\n\n\n")
             logging.warning(f"\t\tNode mapping not possible for req no {req_no}\n\n\n")
             continue
         else:
@@ -69,6 +70,7 @@ def main():
         population = edge_map(substrate, vne_list[req_no], req_no, req_map, vne_list)
         initial_population = []
         if population is None or len(population) == 0:
+            print(f"\t\tinitial population can't be generated for request no : {req_no}\n\n\n")
             logging.warning(f"\t\tinitial population can't be generated for request no : {req_no}\n\n\n")
             continue
         population_set = set()
@@ -130,6 +132,7 @@ def main():
         for ed in selected_map.edges:
             ls[ed] = selected_map.edge_map[c]
             c += 1
+        print(f"\t\tMapping for VNR {req_no} is done successfully!!. {selected_map.edge_map}\ttot_cost: {selected_map.total_cost}")
         logging.info(f"\t\tThe selected chromosome for VNR {req_no} is {selected_map.edge_map}\tfitness: {selected_map.fitness:.4f}\ttot_cost: {selected_map.total_cost}")
         logging.info(f"\t\tThe node map of VNR {req_no} is {selected_map.node_map}")
         logging.info(f"\t\tThe edge map of VNR {req_no} is {ls}")
@@ -250,18 +253,7 @@ def main():
     logging.info(f"\t\tAverage CRB utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
     # logging.shutdown()
-    output_dict = {
-        "revenue": revenue,
-        "total_cost": tot_cost,
-        "accepted": accepted,
-        "total_request": len(vne_list),
-        "pre_resource": pre_resource,
-        "post_resource": post_resource,
-        "avg_link": (ed_cost / pre_resource_edgecost) * 100,
-        "avg_node": (no_cost / pre_resource_nodecost) * 100,
-        "avg_exec": (duration),
-    }
-    return output_dict
+
 
 
 if __name__ == "__main__":

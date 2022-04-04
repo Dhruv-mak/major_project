@@ -1,4 +1,4 @@
-from proposed_helper import get_ranks
+from vikor_helper import get_ranks
 import helper
 import sys
 import copy
@@ -208,18 +208,6 @@ def main():
     logging.info(f"\t\tAverage CRB utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
     # logging.shutdown()
-    output_dict = {
-        "revenue": revenue,
-        "total_cost" : tot_cost,
-        "accepted" : accepted,
-        "total_request": len(vne_list),
-        "pre_resource": pre_resource,
-        "post_resource": post_resource,
-        "avg_link": (ed_cost/pre_resource_edgecost)*100,
-        "avg_node": (no_cost/pre_resource_nodecost)*100,
-        "avg_exec": (duration),
-    }
-    return output_dict
 
 
 if __name__ == '__main__':
