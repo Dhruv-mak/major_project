@@ -16,7 +16,7 @@ def main():
     # #print the out put in log file#print
     # FORMAT = '%(asctime)s - %(levelname)s: %(message)s'
     FORMAT = '%(levelname)s: %(message)s'
-    logging.basicConfig(filename=r'events.log',
+    logging.basicConfig(filename=r'parser.log',
                         filemode="w",
                         format=FORMAT,
                         level=logging.DEBUG,

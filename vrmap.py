@@ -48,12 +48,12 @@ def main():
 
     elite_population = copy.deepcopy(population)
     if len(elite_population) > 1:
-        for _ in range(2):
+        for _ in range(8):
             #print("\n\n ITERATION", _)
             logging.info(f"\n\n")
             logging.info(f"\t\tITERATION {_}")
             i=0
-            while i<2:
+            while i<8:
                 i += 1
                 parent1, parent2 = tounament_selection(elite_population, vne_list)
                 for _ in range(2):

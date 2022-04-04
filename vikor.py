@@ -1,4 +1,4 @@
-from proposed_helper import get_ranks
+from vikor_helper import get_ranks
 import helper
 import sys
 import copy
