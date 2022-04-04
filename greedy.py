@@ -229,7 +229,7 @@ def main():
         "pre_resource": pre_resource,
         "post_resource": post_resource,
         "avg_bw": (ed_cost/pre_resource_edgecost)*100,
-        "avg_crb": (ed_cost/pre_resource_edgecost)*100,
+        "avg_crb": (no_cost/pre_resource_nodecost)*100,
         "avg_link": (utilized_links/len(substrate.edge_weights))*100,
         "avg_node": (utilized_nodes/len(substrate.node_weights))*100,
         "avg_path": (path_cnt/accepted),

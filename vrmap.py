@@ -174,7 +174,7 @@ def main():
     logging.info(f"\t\tEmbedding ratio is {(len(vne_list)/len(vne_list))*100:.4f}%\n")
     logging.info(f"\t\tTotal {utilized_nodes} nodes are utilized out of {len(substrate.node_weights)}")
     logging.info(f"\t\tTotal {utilized_links//2} links are utilized out of {len(substrate.edge_weights)//2}")
-    logging.info(f"\t\tAverage node utilization is {(utilized_nodes/len(substrate.node_weights))*100:.4f}")
+    logging.info(f"\t\tAverage node utilization is {(utilized_nodes/len(substrate.edge_weights))*100:.4f}")
     logging.info(f"\t\tAverage link utilization is {(utilized_links/len(substrate.node_weights))*100:.4f}\n")
     logging.info(f"\t\tAvailabe substrate before embedding CRB: {pre_resource_nodecost} BW: {pre_resource_edgecost} total: {pre_resource}")
     logging.info(f"\t\tAvailabe substrate after embedding CRB: {post_resource_nodecost} BW: {post_resource_edgecost} total: {post_resource}")
@@ -210,7 +210,7 @@ def main():
         "post_resource": post_resource,
         "avg_bw": (selected_map.edge_cost/pre_resource_edgecost)*100,
         "avg_crb": (selected_map.node_cost/pre_resource_nodecost)*100,
-        "avg_link": (utilized_links/len(substrate.node_weights))*100,
+        "avg_link": (utilized_links/len(substrate.edge_weights))*100,
         "avg_node": (utilized_nodes/len(substrate.node_weights))*100,
         "avg_path": (path_cnt/len(vne_list)),
         "avg_exec": (duration),

@@ -1,5 +1,4 @@
 from time import sleep
-from timeit import repeat
 import pandas as pd
 from vikor import main as vikor
 from greedy import main as greedy
@@ -50,10 +49,190 @@ output_dict = {
         "avg_exec": [],
     }
 
-rev_cnt=0
-rct_cnt=0
-acc_cnt=0
-exec_cnt=0
+def exec_greedy(tot=1):
+    gred_out = greedy()
+    sleep(tot*1)
+    
+    printToExcel(
+        algorithm='GREEDY',
+        revenue=gred_out['revenue'],
+        total_cost=gred_out['total_cost'],
+        revenuetocostratio=(gred_out['revenue']/gred_out['total_cost'])*100,
+        accepted=gred_out['accepted'],
+        total_request=gred_out['total_request'],
+        embeddingratio=(gred_out['accepted']/gred_out['total_request'])*100,
+        pre_resource=gred_out['pre_resource'],
+        post_resource=gred_out['post_resource'],
+        consumed=gred_out['pre_resource']-gred_out['post_resource'],
+        avg_bw=gred_out['avg_bw'],
+        avg_crb=gred_out['avg_crb'],
+        avg_link=gred_out['avg_link'],
+        avg_node=gred_out['avg_node'],
+        avg_path=gred_out['avg_path'],
+        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request']
+    )
+
+
+def exec_vikor(tot=1):
+    vikor_out = vikor()
+    sleep(tot*1)
+    printToExcel(
+        algorithm='VIKOR',
+        revenue=vikor_out['revenue'],
+        total_cost=vikor_out['total_cost'],
+        revenuetocostratio=(vikor_out['revenue']/vikor_out['total_cost'])*100,
+        accepted=vikor_out['accepted'],
+        total_request=vikor_out['total_request'],
+        embeddingratio=(vikor_out['accepted']/vikor_out['total_request'])*100,
+        pre_resource=vikor_out['pre_resource'],
+        post_resource=vikor_out['post_resource'],
+        consumed=vikor_out['pre_resource']-vikor_out['post_resource'],
+        avg_bw=vikor_out['avg_bw'],
+        avg_crb=vikor_out['avg_crb'],
+        avg_link=vikor_out['avg_link'],
+        avg_node=vikor_out['avg_node'],
+        avg_path=vikor_out['avg_path'],
+        avg_exec=vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request']
+    )
+
+
+def exec_topsis(tot=1):
+    topsis_out = topsis()
+    sleep(tot*1)
+    
+    printToExcel(
+        algorithm='TOPSIS',
+        revenue=topsis_out['revenue'],
+        total_cost=topsis_out['total_cost'],
+        revenuetocostratio=(topsis_out['revenue']/topsis_out['total_cost'])*100,
+        accepted=topsis_out['accepted'],
+        total_request=topsis_out['total_request'],
+        embeddingratio=(topsis_out['accepted']/topsis_out['total_request'])*100,
+        pre_resource=topsis_out['pre_resource'],
+        post_resource=topsis_out['post_resource'],
+        consumed=topsis_out['pre_resource']-topsis_out['post_resource'],
+        avg_bw=topsis_out['avg_bw'],
+        avg_crb=topsis_out['avg_crb'],
+        avg_link=topsis_out['avg_link'],
+        avg_node=topsis_out['avg_node'],
+        avg_path=topsis_out['avg_path'],
+        avg_exec=topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request']
+    )
+    
+
+def exec_parser(tot=2):
+    parser_out = parser()
+    sleep(tot*2)
+    
+    printToExcel(
+        algorithm='PAGERANK-STABLE',
+        revenue=parser_out[0]['revenue'],
+        total_cost=parser_out[0]['total_cost'],
+        revenuetocostratio=(parser_out[0]['revenue']/parser_out[0]['total_cost'])*100,
+        accepted=parser_out[0]['accepted'],
+        total_request=parser_out[0]['total_request'],
+        embeddingratio=(parser_out[0]['accepted']/parser_out[0]['total_request'])*100,
+        pre_resource=parser_out[0]['pre_resource'],
+        post_resource=parser_out[0]['post_resource'],
+        consumed=parser_out[0]['pre_resource']-parser_out[0]['post_resource'],
+        avg_bw=parser_out[0]['avg_bw'],
+        avg_crb=parser_out[0]['avg_crb'],
+        avg_link=parser_out[0]['avg_link'],
+        avg_node=parser_out[0]['avg_node'],
+        avg_path=parser_out[0]['avg_path'],
+        avg_exec=parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request']
+    )
+    
+    printToExcel(
+        algorithm='PAGERANK-DIRECT',
+        revenue=parser_out[1]['revenue'],
+        total_cost=parser_out[1]['total_cost'],
+        revenuetocostratio=(parser_out[1]['revenue']/parser_out[1]['total_cost'])*100,
+        accepted=parser_out[1]['accepted'],
+        total_request=parser_out[1]['total_request'],
+        embeddingratio=(parser_out[1]['accepted']/parser_out[1]['total_request'])*100,
+        pre_resource=parser_out[1]['pre_resource'],
+        post_resource=parser_out[1]['post_resource'],
+        consumed=parser_out[1]['pre_resource']-parser_out[1]['post_resource'],
+        avg_bw=parser_out[1]['avg_bw'],
+        avg_crb=parser_out[1]['avg_crb'],
+        avg_link=parser_out[1]['avg_link'],
+        avg_node=parser_out[1]['avg_node'],
+        avg_path=parser_out[1]['avg_path'],
+        avg_exec=parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request']
+    )
+
+
+def exec_vrmap(tot=7):
+    vrmap_out = vrmap()
+    sleep(tot*7)
+    printToExcel(
+        algorithm='VRMAP',
+        revenue=vrmap_out['revenue'],
+        total_cost=vrmap_out['total_cost'],
+        revenuetocostratio=(vrmap_out['revenue']/vrmap_out['total_cost'])*100,
+        accepted=vrmap_out['accepted'],
+        total_request=vrmap_out['total_request'],
+        embeddingratio=(vrmap_out['accepted']/vrmap_out['total_request'])*100,
+        pre_resource=vrmap_out['pre_resource'],
+        post_resource=vrmap_out['post_resource'],
+        consumed=vrmap_out['pre_resource']-vrmap_out['post_resource'],
+        avg_bw=vrmap_out['avg_bw'],
+        avg_crb=vrmap_out['avg_crb'],
+        avg_link=vrmap_out['avg_link'],
+        avg_node=vrmap_out['avg_node'],
+        avg_path=vrmap_out['avg_path'],
+        avg_exec=vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request']
+    )
+
+
+def exec_rethinking(tot=15):
+    rethinking_out = rethinking()
+    sleep(tot*15)
+
+    printToExcel(
+        algorithm='RETHINKING',
+        revenue=rethinking_out['revenue'],
+        total_cost=rethinking_out['total_cost'],
+        revenuetocostratio=(rethinking_out['revenue']/rethinking_out['total_cost'])*100,
+        accepted=rethinking_out['accepted'],
+        total_request=rethinking_out['total_request'],
+        embeddingratio=(rethinking_out['accepted']/rethinking_out['total_request'])*100,
+        pre_resource=rethinking_out['pre_resource'],
+        post_resource=rethinking_out['post_resource'],
+        consumed=rethinking_out['pre_resource']-rethinking_out['post_resource'],
+        avg_bw=rethinking_out['avg_bw'],
+        avg_crb=rethinking_out['avg_crb'],
+        avg_link=rethinking_out['avg_link'],
+        avg_node=rethinking_out['avg_node'],
+        avg_path=rethinking_out['avg_path'],
+        avg_exec=rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request']
+    )
+
+
+def printToExcel(algorithm='', revenue='', total_cost='', revenuetocostratio='', accepted='', total_request='', 
+embeddingratio='', pre_resource='', post_resource='',consumed='',avg_bw='',avg_crb='',avg_link='',
+avg_node='',avg_path='',avg_exec=''):
+
+    output_dict["algorithm"].append(algorithm)
+    output_dict["revenue"].append(revenue)
+    output_dict["total_cost"].append(total_cost)
+    output_dict["revenuetocostratio"].append(revenuetocostratio)
+    output_dict["accepted"].append(accepted)
+    output_dict["total_request"].append(total_request)
+    output_dict["embeddingratio"].append(embeddingratio)
+    output_dict["pre_resource"].append(pre_resource)
+    output_dict["post_resource"].append(post_resource)
+    output_dict["consumed"].append(consumed)
+    output_dict["avg_bw"].append(avg_bw)
+    output_dict["avg_crb"].append(avg_crb)
+    output_dict["avg_link"].append(avg_link)
+    output_dict["avg_node"].append(avg_node)
+    output_dict["avg_path"].append(avg_path)
+    output_dict["avg_exec"].append(avg_exec)
+
+
+
 def main(for_automate, vne):
     tot=0
     ls = [3]
@@ -65,222 +244,67 @@ def main(for_automate, vne):
         # setup_logger('log1','vikor.log')
         # setup_logger('log2','greedy.log')
         try:
-            repeat = int(input("Enter how many times to repeat (int only) : "))
+            iteration = int(input("Enter how many times to repeat (int only) : "))
         except:
-            repeat = 1
+            iteration = 1
         cnt=0
-        while cnt<repeat:
+        while cnt<iteration:
             vne_list = vne(no_requests=req_no)
             output = {"substrate": substrate, "vne_list" : vne_list}
             pickle_file = open("input.pickle", "wb")
             pickle.dump(output, pickle_file)
 
-            gred_out = greedy()
-            sleep(tot*1)
-            vikor_out = vikor()
-            sleep(tot*1)
-            topsis_out = topsis()
-            sleep(tot*1)
-            parser_out = parser()
-            sleep(tot*2)
-            vrmap_out = vrmap()
-            sleep(tot*7)
-            rethinking_out = rethinking()
-            sleep(tot*15)
+            exec_greedy(tot)
+            exec_vikor(tot)
+            exec_topsis(tot)
+            exec_parser(tot)
+            exec_vrmap(tot)
+            exec_rethinking(tot)
             
-            output_dict["algorithm"].append('GREEDY')
-            output_dict["revenue"].append(gred_out['revenue'])
-            output_dict["total_cost"].append(gred_out['total_cost'])
-            output_dict["revenuetocostratio"].append((gred_out['revenue']/gred_out['total_cost'])*100)
-            output_dict["accepted"].append(gred_out['accepted'])
-            output_dict["total_request"].append(gred_out['total_request'])
-            output_dict["embeddingratio"].append((gred_out['accepted']/gred_out['total_request'])*100)
-            output_dict["pre_resource"].append(gred_out['pre_resource'])
-            output_dict["post_resource"].append(gred_out['post_resource'])
-            output_dict["consumed"].append(gred_out['pre_resource']-gred_out['post_resource'])
-            output_dict["avg_bw"].append(gred_out['avg_bw'])
-            output_dict["avg_crb"].append(gred_out['avg_crb'])
-            output_dict["avg_link"].append(gred_out['avg_link'])
-            output_dict["avg_node"].append(gred_out['avg_node'])
-            output_dict["avg_path"].append(gred_out['avg_path'])
-            output_dict["avg_exec"].append(gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'])
-            
-            
-            output_dict["algorithm"].append('VIKOR')
-            output_dict["revenue"].append(vikor_out['revenue'])
-            output_dict["total_cost"].append(vikor_out['total_cost'])
-            output_dict["revenuetocostratio"].append((vikor_out['revenue']/vikor_out['total_cost'])*100)
-            output_dict["accepted"].append(vikor_out['accepted'])
-            output_dict["total_request"].append(vikor_out['total_request'])
-            output_dict["embeddingratio"].append((vikor_out['accepted']/vikor_out['total_request'])*100)
-            output_dict["pre_resource"].append(vikor_out['pre_resource'])
-            output_dict["post_resource"].append(vikor_out['post_resource'])
-            output_dict["consumed"].append(vikor_out['pre_resource']-vikor_out['post_resource'])
-            output_dict["avg_bw"].append(vikor_out['avg_bw'])
-            output_dict["avg_crb"].append(vikor_out['avg_crb'])
-            output_dict["avg_link"].append(vikor_out['avg_link'])
-            output_dict["avg_node"].append(vikor_out['avg_node'])
-            output_dict["avg_path"].append(vikor_out['avg_path'])
-            output_dict["avg_exec"].append(vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'])
-
-            output_dict["algorithm"].append('TOPSIS')
-            output_dict["revenue"].append(topsis_out['revenue'])
-            output_dict["total_cost"].append(topsis_out['total_cost'])
-            output_dict["revenuetocostratio"].append((topsis_out['revenue']/topsis_out['total_cost'])*100)
-            output_dict["accepted"].append(topsis_out['accepted'])
-            output_dict["total_request"].append(topsis_out['total_request'])
-            output_dict["embeddingratio"].append((topsis_out['accepted']/topsis_out['total_request'])*100)
-            output_dict["pre_resource"].append(topsis_out['pre_resource'])
-            output_dict["post_resource"].append(topsis_out['post_resource'])
-            output_dict["consumed"].append(topsis_out['pre_resource']-topsis_out['post_resource'])
-            output_dict["avg_bw"].append(topsis_out['avg_bw'])
-            output_dict["avg_crb"].append(topsis_out['avg_crb'])
-            output_dict["avg_link"].append(topsis_out['avg_link'])
-            output_dict["avg_node"].append(topsis_out['avg_node'])
-            output_dict["avg_path"].append(topsis_out['avg_path'])
-            output_dict["avg_exec"].append(topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'])
-            
-            output_dict["algorithm"].append('PAGERANK-STABLE')
-            output_dict["revenue"].append(parser_out[0]['revenue'])
-            output_dict["total_cost"].append(parser_out[0]['total_cost'])
-            output_dict["revenuetocostratio"].append((parser_out[0]['revenue']/parser_out[0]['total_cost'])*100)
-            output_dict["accepted"].append(parser_out[0]['accepted'])
-            output_dict["total_request"].append(parser_out[0]['total_request'])
-            output_dict["embeddingratio"].append((parser_out[0]['accepted']/parser_out[0]['total_request'])*100)
-            output_dict["pre_resource"].append(parser_out[0]['pre_resource'])
-            output_dict["post_resource"].append(parser_out[0]['post_resource'])
-            output_dict["consumed"].append(parser_out[0]['pre_resource']-parser_out[0]['post_resource'])
-            output_dict["avg_bw"].append(parser_out[0]['avg_bw'])
-            output_dict["avg_crb"].append(parser_out[0]['avg_crb'])
-            output_dict["avg_link"].append(parser_out[0]['avg_link'])
-            output_dict["avg_node"].append(parser_out[0]['avg_node'])
-            output_dict["avg_path"].append(parser_out[0]['avg_path'])
-            output_dict["avg_exec"].append(parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request'])
-
-            output_dict["algorithm"].append('PAGERANK-DIRECT')
-            output_dict["revenue"].append(parser_out[1]['revenue'])
-            output_dict["total_cost"].append(parser_out[1]['total_cost'])
-            output_dict["revenuetocostratio"].append((parser_out[1]['revenue']/parser_out[1]['total_cost'])*100)
-            output_dict["accepted"].append(parser_out[1]['accepted'])
-            output_dict["total_request"].append(parser_out[1]['total_request'])
-            output_dict["embeddingratio"].append((parser_out[1]['accepted']/parser_out[1]['total_request'])*100)
-            output_dict["pre_resource"].append(parser_out[1]['pre_resource'])
-            output_dict["post_resource"].append(parser_out[1]['post_resource'])
-            output_dict["consumed"].append(parser_out[1]['pre_resource']-parser_out[1]['post_resource'])
-            output_dict["avg_bw"].append(parser_out[1]['avg_bw'])
-            output_dict["avg_crb"].append(parser_out[1]['avg_crb'])
-            output_dict["avg_link"].append(parser_out[1]['avg_link'])
-            output_dict["avg_node"].append(parser_out[1]['avg_node'])
-            output_dict["avg_path"].append(parser_out[1]['avg_path'])
-            output_dict["avg_exec"].append(parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request'])
-
-            output_dict["algorithm"].append('VRMAP')
-            output_dict["revenue"].append(vrmap_out['revenue'])
-            output_dict["total_cost"].append(vrmap_out['total_cost'])
-            output_dict["revenuetocostratio"].append((vrmap_out['revenue']/vrmap_out['total_cost'])*100)
-            output_dict["accepted"].append(vrmap_out['accepted'])
-            output_dict["total_request"].append(vrmap_out['total_request'])
-            output_dict["embeddingratio"].append((vrmap_out['accepted']/vrmap_out['total_request'])*100)
-            output_dict["pre_resource"].append(vrmap_out['pre_resource'])
-            output_dict["post_resource"].append(vrmap_out['post_resource'])
-            output_dict["consumed"].append(vrmap_out['pre_resource']-vrmap_out['post_resource'])
-            output_dict["avg_bw"].append(vrmap_out['avg_bw'])
-            output_dict["avg_crb"].append(vrmap_out['avg_crb'])
-            output_dict["avg_link"].append(vrmap_out['avg_link'])
-            output_dict["avg_node"].append(vrmap_out['avg_node'])
-            output_dict["avg_path"].append(vrmap_out['avg_path'])
-            output_dict["avg_exec"].append(vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request'])
-
-            output_dict["algorithm"].append('RETHINKING')
-            output_dict["revenue"].append(rethinking_out['revenue'])
-            output_dict["total_cost"].append(rethinking_out['total_cost'])
-            output_dict["revenuetocostratio"].append((rethinking_out['revenue']/rethinking_out['total_cost'])*100)
-            output_dict["accepted"].append(rethinking_out['accepted'])
-            output_dict["total_request"].append(rethinking_out['total_request'])
-            output_dict["embeddingratio"].append((rethinking_out['accepted']/rethinking_out['total_request'])*100)
-            output_dict["pre_resource"].append(rethinking_out['pre_resource'])
-            output_dict["post_resource"].append(rethinking_out['post_resource'])
-            output_dict["consumed"].append(rethinking_out['pre_resource']-rethinking_out['post_resource'])
-            output_dict["avg_bw"].append(rethinking_out['avg_bw'])
-            output_dict["avg_crb"].append(rethinking_out['avg_crb'])
-            output_dict["avg_link"].append(rethinking_out['avg_link'])
-            output_dict["avg_node"].append(rethinking_out['avg_node'])
-            output_dict["avg_path"].append(rethinking_out['avg_path'])
-            output_dict["avg_exec"].append(rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request'])
-
-            output_dict["algorithm"].append('')
-            output_dict["revenue"].append('')
-            output_dict["total_cost"].append('')
-            output_dict["revenuetocostratio"].append('')
-            output_dict["accepted"].append('')
-            output_dict["total_request"].append('')
-            output_dict["embeddingratio"].append('')
-            output_dict["pre_resource"].append('')
-            output_dict["post_resource"].append('')
-            output_dict["consumed"].append('')
-            output_dict["avg_bw"].append('')
-            output_dict["avg_crb"].append('')
-            output_dict["avg_link"].append('')
-            output_dict["avg_node"].append('')
-            output_dict["avg_path"].append('')
-            output_dict["avg_exec"].append('')
-            
+            printToExcel()
             cnt += 1
     
 
 #######################################################################################
 #######################################################################################
 ##                                                                                   ##
-##       IMPORTANT - CLOSE test.xlsx (excel file) IF OPEN BEFORE RUNNING THIS        ##
+##    IMPORTANT - CLOSE test.xlsx (excel file) IF OPEN BEFORE RUNNING THIS           ##
+##                                                                                   ##
+##    IMPORTANT - PLEASE CHOOSE THE PICKLE FILE, CRB & BW LIMITS FOR                 ##  
+##                ALL(RANDOM, UNIFORM, POISSION) DISTRIBUTIONS BEFORE RUNNING THIS   ##
 ##                                                                                   ##
 #######################################################################################
 #######################################################################################
 
-if __name__ == "__main__":
+def runRandomExtraction():
+    printToExcel()
+    for _ in range(3):
+        printToExcel(pre_resource='RANDOM')
+    printToExcel()
     print("\nRandom Extraction\n")
     main(graph_extraction.for_automate, vne)
-    
-    for _ in range(3):
-        output_dict["algorithm"].append('UNIFORM')
-        output_dict["revenue"].append('')
-        output_dict["total_cost"].append('')
-        output_dict["revenuetocostratio"].append('')
-        output_dict["accepted"].append('')
-        output_dict["total_request"].append('')
-        output_dict["embeddingratio"].append('')
-        output_dict["pre_resource"].append('')
-        output_dict["post_resource"].append('')
-        output_dict["consumed"].append('')
-        output_dict["avg_bw"].append('')
-        output_dict["avg_crb"].append('')
-        output_dict["avg_link"].append('')
-        output_dict["avg_node"].append('')
-        output_dict["avg_path"].append('')
-        output_dict["avg_exec"].append('')
 
+def runUniformExtraction():
+    printToExcel()
+    for _ in range(3):
+        printToExcel(pre_resource='UNIFORM')
+    printToExcel()
     print("\nUNIFORM Extraction\n")    
     main(graph_extraction_uniform.for_automate, vne_u)
-    
+
+def runPoissionExtraction():
+    printToExcel()
     for _ in range(3):
-        output_dict["algorithm"].append('POISSON')
-        output_dict["revenue"].append('')
-        output_dict["total_cost"].append('')
-        output_dict["revenuetocostratio"].append('')
-        output_dict["accepted"].append('')
-        output_dict["total_request"].append('')
-        output_dict["embeddingratio"].append('')
-        output_dict["pre_resource"].append('')
-        output_dict["post_resource"].append('')
-        output_dict["consumed"].append('')
-        output_dict["avg_bw"].append('')
-        output_dict["avg_crb"].append('')
-        output_dict["avg_link"].append('')
-        output_dict["avg_node"].append('')
-        output_dict["avg_path"].append('')
-        output_dict["avg_exec"].append('')
-    
+        printToExcel(pre_resource='POISSION')
+    printToExcel()
     print("\nPOISSON Extraction\n")
     main(graph_extraction_poisson.for_automate, vne_p)
+
+if __name__ == "__main__":
+
+    runRandomExtraction()
+    runUniformExtraction()
+    runPoissionExtraction()
     
     excel = pd.DataFrame(output_dict)
     excel.to_excel("test.xlsx")
