@@ -4,11 +4,12 @@ from datetime import datetime, date
 import logging
 import random
 from rethinking_helper import *
-
+import config
 
 def main():
     print(f"\t\t{datetime.now().time()}\tRethinking started")
-    substrate, vne_list = helper.read_pickle()
+    # substrate, vne_list = helper.read_pickle()
+    substrate, vne_list = config.substrate, config.vne_list
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="rethinking.log", filemode="w", level=logging.INFO)
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")

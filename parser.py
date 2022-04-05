@@ -11,6 +11,7 @@ import random
 import os, sys
 import helper
 from datetime import datetime, date
+import config
 def main():
     print(f"\t\t{datetime.now().time()}\tParser Started")
     # #print the out put in log file#print
@@ -22,7 +23,8 @@ def main():
                         level=logging.DEBUG,
                         datefmt = '%Y-%m-%d %H:%M:%S %p')
 
-    substrate, vne_list = helper.read_pickle()
+    # substrate, vne_list = helper.read_pickle()
+    substrate, vne_list = config.substrate, config.vne_list
     sn = dict()
     vneRequests = list()
 

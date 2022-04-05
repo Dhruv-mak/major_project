@@ -5,6 +5,7 @@ import copy
 from datetime import datetime, date
 import logging
 import math
+import config
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -80,7 +81,8 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     
 def main():
     print(f"\t\t{datetime.now().time()}\tTopsis Started")
-    substrate, vne_list = helper.read_pickle()
+    # substrate, vne_list = helper.read_pickle()
+    substrate, vne_list = config.substrate, config.vne_list
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="topsis.log",filemode="w", level=logging.INFO)
 

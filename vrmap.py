@@ -5,13 +5,15 @@ import copy
 from datetime import datetime, date
 import pickle
 import logging
+import config
 
 def main():
     print(f"\t\t{datetime.now().time()}\tVRMap Started")
     start_time = datetime.now().time()
     bracket = []
     revenue = 0
-    substrate, vne_list = helper.read_pickle()
+    # substrate, vne_list = helper.read_pickle()
+    substrate, vne_list = config.substrate, config.vne_list
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="vrmap.log",filemode="w", level=logging.INFO)
 

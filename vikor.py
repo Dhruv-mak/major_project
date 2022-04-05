@@ -4,7 +4,7 @@ import sys
 import copy
 from datetime import datetime, date
 import logging
-
+import config
 # global log1
 # log1 = logging.getLogger('log1')
 
@@ -80,7 +80,8 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
     
 def main():
     print(f"\t\t{datetime.now().time()}\tVikor Started")
-    substrate, vne_list = helper.read_pickle()
+    # substrate, vne_list = helper.read_pickle()
+    substrate, vne_list = config.substrate, config.vne_list
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="vikor.log",filemode="w", level=logging.INFO)
 
