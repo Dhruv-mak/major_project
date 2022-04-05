@@ -13,7 +13,7 @@ def main():
     bracket = []
     revenue = 0
     # substrate, vne_list = helper.read_pickle()
-    substrate, vne_list = config.substrate, config.vne_list
+    substrate, vne_list = copy.deepcopy(config.substrate), copy.deepcopy(config.vne_list)
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="vrmap.log",filemode="w", level=logging.INFO)
 

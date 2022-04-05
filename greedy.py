@@ -81,7 +81,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 def main():
     print(f"\t\t{datetime.now().time()}\tGreedy Started")
     # substrate, vne_list = helper.read_pickle()
-    substrate, vne_list = config.substrate, config.vne_list
+    substrate, vne_list = copy.deepcopy(config.substrate), copy.deepcopy(config.vne_list)
     copy_sub = copy.deepcopy(substrate)
     logging.basicConfig(filename="greedy.log",filemode="w", level=logging.INFO)
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")

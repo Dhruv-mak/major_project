@@ -24,7 +24,7 @@ def main():
                         datefmt = '%Y-%m-%d %H:%M:%S %p')
 
     # substrate, vne_list = helper.read_pickle()
-    substrate, vne_list = config.substrate, config.vne_list
+    substrate, vne_list = copy.deepcopy(config.substrate), copy.deepcopy(config.vne_list)
     sn = dict()
     vneRequests = list()
 

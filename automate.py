@@ -14,8 +14,6 @@ import graph_extraction
 import graph_extraction_uniform
 import graph_extraction_poisson
 import logging
-import pickle
-import helper
 import config
 
 def setup_logger(logger_name, log_file, level=logging.INFO):
@@ -241,7 +239,6 @@ def main(for_automate, vne):
         tot += 1
         print(f"\n\treq_no: {req_no}\n")
         substrate, vne_list = for_automate(req_no)
-        # substrate, vne_list = helper.read_pickle()
         # setup_logger('log1','vikor.log')
         # setup_logger('log2','greedy.log')
         try:
@@ -251,18 +248,15 @@ def main(for_automate, vne):
         cnt=0
         while cnt<iteration:
             vne_list = vne(no_requests=req_no)
-            # output = {"substrate": substrate, "vne_list" : vne_list}
-            # pickle_file = open("input.pickle", "wb")
-            # pickle.dump(output, pickle_file)
             config.substrate = copy.deepcopy(substrate)
-            config.vne_list = vne_list
+            config.vne_list = copy.deepcopy(vne_list)
 
             exec_greedy(tot)
-            # exec_vikor(tot)
-            # exec_topsis(tot)
-            # exec_parser(tot)
-            # exec_vrmap(tot)
-            # exec_rethinking(tot)
+            exec_vikor(tot)
+            exec_topsis(tot)
+            exec_parser(tot)
+            exec_vrmap(tot)
+            exec_rethinking(tot)
             
             printToExcel()
             cnt += 1
