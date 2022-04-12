@@ -244,6 +244,9 @@ def log_substrate(substrate):
     )
 
 def log_vnr(vne_list):
+    total_vnr_nodes = 0
+    total_vnr_links = 0
+    avg_path_length = 0
     logging.info(f"\n\t\t\t\t\t\tVIRTUAL NETWORK")
     logging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
     for vnr in range(len(vne_list)):
@@ -251,14 +254,29 @@ def log_vnr(vne_list):
             f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}"
         )
         temp = []
+        total_vnr_nodes += vne_list[vnr].nodes
         for node in range(vne_list[vnr].nodes):
             temp.append((node, vne_list[vnr].node_weights[node]))
         logging.info(f"\t\tNodes of the VNR-{vnr} with weight are : {temp}")
         temp = []
+        total_vnr_links += len(vne_list[vnr].edges)
         for edge in vne_list[vnr].edges:
             temp.append((edge, vne_list[vnr].edge_weights[edge]))
         if vnr == len(vne_list) - 1:
             logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}\n\n")
         else:
             logging.info(f"\t\tEdges of the VNR-{vnr} with weight are : {temp}")
+        avg_path_length += findAvgPathLength(vne_list[vnr])
+    avg_path_length /= len(vne_list)
+    return total_vnr_nodes, total_vnr_links, avg_path_length
  
+def findAvgPathLength(vnr):
+    cnt=0
+    for node1 in range(vnr.nodes):
+        for node2 in range(vnr.nodes):
+            if(node1 != node2):
+                path = vnr.findShortestPath(str(node1), str(node2), 0)
+                cnt += len(path)-1
+    total_nodes = vnr.nodes
+    cnt /= (total_nodes)*(total_nodes-1)
+    return cnt

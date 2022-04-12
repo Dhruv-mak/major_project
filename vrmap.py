@@ -19,7 +19,7 @@ def main():
 
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     log_substrate(substrate)
-    log_vnr(vne_list)
+    total_vnr_nodes, total_vnr_links, avg_path_length = log_vnr(vne_list)
 
     index_chromosome, bracket, revenue = get_index(vne_list)
     population = set()
@@ -38,6 +38,8 @@ def main():
             "avg_node": -1,
             "avg_path": -1,
             "avg_exec": datetime.combine(date.min, datetime.now().time()) - datetime.combine(date.min, datetime.now().time()),
+            "total_nodes": total_vnr_nodes,
+            "total_links": total_vnr_links,
         }
         print(f"\t\t{datetime.now().time()}\tVrmap completed\n")
         return  output_dict
@@ -181,7 +183,7 @@ def main():
     logging.info(f"\t\tAvailabe substrate before embedding CRB: {pre_resource_nodecost} BW: {pre_resource_edgecost} total: {pre_resource}")
     logging.info(f"\t\tAvailabe substrate after embedding CRB: {post_resource_nodecost} BW: {post_resource_edgecost} total: {post_resource}")
     logging.info(f"\t\tConsumed substrate CRB: {pre_resource_nodecost-post_resource_nodecost} BW: {pre_resource_edgecost-post_resource_edgecost} total: {pre_resource - post_resource}\n")
-    logging.info(f"\t\tAverage Path length is {(path_cnt/len(vne_list)):.4f}\n")    
+    logging.info(f"\t\tAverage Path length is {avg_path_length:.4f}\n")    
     logging.info(f"\t\tAverage BW utilization {(selected_map.edge_cost/pre_resource_edgecost)*100:.4f}%")
     logging.info(f"\t\tAverage CRB utilization {(selected_map.node_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
@@ -214,8 +216,10 @@ def main():
         "avg_crb": (selected_map.node_cost/pre_resource_nodecost)*100,
         "avg_link": (utilized_links/len(substrate.edge_weights))*100,
         "avg_node": (utilized_nodes/len(substrate.node_weights))*100,
-        "avg_path": (path_cnt/len(vne_list)),
+        "avg_path": avg_path_length,
         "avg_exec": (duration),
+        "total_nodes": total_vnr_nodes,
+        "total_links": total_vnr_links,
     }
     print(f"\t\t{datetime.now().time()}\tVRMap completed\n")
     return output_dict

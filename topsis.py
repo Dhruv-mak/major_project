@@ -78,7 +78,18 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
         sub_wt.append((edge, substrate.edge_weights[edge]))
     logging.info(f"\t\tSubstrate edge after mapping VNR-{req_no} is {sub_wt}")
     return True
-    
+
+def findAvgPathLength(vnr):
+    cnt=0
+    for node1 in range(vnr.nodes):
+        for node2 in range(vnr.nodes):
+            if(node1 != node2):
+                path = vnr.findShortestPath(str(node1), str(node2), 0)
+                cnt += len(path)-1
+    total_nodes = vnr.nodes
+    cnt /= (total_nodes)*(total_nodes-1)
+    return cnt
+   
 def main():
     print(f"\t\t{datetime.now().time()}\tTopsis Started")
     # substrate, vne_list = helper.read_pickle()
@@ -97,14 +108,18 @@ def main():
         temp.append((edge,substrate.edge_weights[edge]))
     logging.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n\t\t\t\t\t\tVIRTUAL NETWORK")
 
+    total_vnr_nodes = 0
+    total_vnr_links = 0
     logging.info(f"\t\tTotal number of Virtual Network Request is : {len(vne_list)}\n")
     for vnr in range(len(vne_list)):
         logging.info(f"\t\tTotal number of nodes and edges in VNR-{vnr} is : {vne_list[vnr].nodes} and {len(vne_list[vnr].edges)}")
         temp = []
+        total_vnr_nodes += vne_list[vnr].nodes
         for node in range(vne_list[vnr].nodes):
             temp.append((node, vne_list[vnr].node_weights[node]))
         logging.info(f"\t\tNodes of the VNR-{vnr} with weight are : {temp}")
         temp = []
+        total_vnr_links += len(vne_list[vnr].edges)
         for edge in vne_list[vnr].edges:
             temp.append((edge, vne_list[vnr].edge_weights[edge]))
         if vnr == len(vne_list)-1:
@@ -116,6 +131,7 @@ def main():
     accepted = 0
     revenue = 0
     path_cnt=0
+    avg_path_length = 0
     curr_map = dict() # only contains the requests which are successfully mapped
     pre_resource_edgecost = sum(substrate.edge_weights.values())//2 # total available bandwidth of the physical network
     pre_resource_nodecost = sum(substrate.node_weights.values()) # total crb bandwidth of the physical network
@@ -139,6 +155,7 @@ def main():
         accepted += 1
         for ed in req_map.edge_map:
             path_cnt += len(req_map.edge_map[ed])
+        avg_path_length += findAvgPathLength(vne_list[req_no])
         req_map.total_cost = req_map.node_cost + req_map.edge_cost
         #print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with revenue {sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2} and total cost {req_map.total_cost}\n")
@@ -166,6 +183,7 @@ def main():
         if substrate.node_weights[node] != copy_sub.node_weights[node]:
             utilized_nodes += 1
     
+    avg_path_length /= accepted
     post_resource = post_resource_edgecost + post_resource_nodecost
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
@@ -206,6 +224,8 @@ def main():
             "avg_node": -1,
             "avg_path": -1,
             "avg_exec": (duration),
+            "total_nodes": total_vnr_nodes,
+            "total_links": total_vnr_links,
         }
         #print(f"\t\t{datetime.now().time()}\tVikor completed\n")
         return output_dict
@@ -220,7 +240,7 @@ def main():
     logging.info(f"\t\tAvailabe substrate before embedding CRB: {pre_resource_nodecost} BW: {pre_resource_edgecost} total: {pre_resource}")
     logging.info(f"\t\tAvailabe substrate after embedding CRB: {post_resource_nodecost} BW: {post_resource_edgecost} total: {post_resource}")
     logging.info(f"\t\tConsumed substrate CRB: {pre_resource_nodecost-post_resource_nodecost} BW: {pre_resource_edgecost-post_resource_edgecost} total: {pre_resource - post_resource}\n")
-    logging.info(f"\t\tAverage Path length is {(path_cnt/accepted):.4f}\n")
+    logging.info(f"\t\tAverage Path length is {avg_path_length:.4f}\n")
     logging.info(f"\t\tAverage BW utilization {(ed_cost/pre_resource_edgecost)*100:.4f}%")
     logging.info(f"\t\tAverage CRB utilization {(no_cost/pre_resource_nodecost)*100:.4f}%")
     logging.info(f"\t\tAverage execution time {duration/len(vne_list)} (HH:MM:SS)\n\n\n")
@@ -236,8 +256,10 @@ def main():
         "avg_crb": (no_cost/pre_resource_nodecost)*100,
         "avg_link": (utilized_links/len(substrate.edge_weights))*100,
         "avg_node": (utilized_nodes/len(substrate.node_weights))*100,
-        "avg_path": (path_cnt/accepted),
+        "avg_path": avg_path_length,
         "avg_exec": (duration),
+        "total_nodes": total_vnr_nodes,
+        "total_links": total_vnr_links,
     }
     print(f"\t\t{datetime.now().time()}\tTopsis completed\n")
     return output_dict

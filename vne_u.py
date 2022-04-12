@@ -45,7 +45,7 @@ def create_vne(min_nodes=2, max_nodes=5, no_requests=1000, probability=0.4):
         for j in range(nodes):
             for k in new_vne_req[i][j + 1]:
                 edges.add((str(j), str(k - 1)))
-        vne.append(graph_u.Graph(nodes, edges, Parameters(1, 10, 1, 10, 0, 100, 0, 100, 1, 4)) )  # for vne request BW ,CRB, Location,Delay
+        vne.append(graph_u.Graph(nodes, edges, Parameters(1, 20, 1, 20, 0, 100, 0, 100, 1, 4)) )  # for vne request BW ,CRB, Location,Delay
     #print (vne)
     return vne
 

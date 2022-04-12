@@ -1,4 +1,5 @@
 import copy
+import os
 from time import sleep
 import pandas as pd
 from vikor import main as vikor
@@ -15,6 +16,7 @@ import graph_extraction_uniform
 import graph_extraction_poisson
 import logging
 import config
+import pickle
 
 def setup_logger(logger_name, log_file, level=logging.INFO):
     l = logging.getLogger(logger_name)
@@ -46,6 +48,8 @@ output_dict = {
         "avg_node": [],
         "avg_path": [],
         "avg_exec": [],
+        "total_nodes": [],
+        "total_links": [],
     }
 
 def exec_greedy(tot=1):
@@ -68,7 +72,9 @@ def exec_greedy(tot=1):
         avg_link=gred_out['avg_link'],
         avg_node=gred_out['avg_node'],
         avg_path=gred_out['avg_path'],
-        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request']
+        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'],
+        total_nodes=gred_out['total_nodes'],
+        total_links=gred_out['total_links']
     )
 
 
@@ -91,7 +97,9 @@ def exec_vikor(tot=1):
         avg_link=vikor_out['avg_link'],
         avg_node=vikor_out['avg_node'],
         avg_path=vikor_out['avg_path'],
-        avg_exec=vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request']
+        avg_exec=vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'],
+        total_nodes=vikor_out['total_nodes'],
+        total_links=vikor_out['total_links']
     )
 
 
@@ -115,7 +123,9 @@ def exec_topsis(tot=1):
         avg_link=topsis_out['avg_link'],
         avg_node=topsis_out['avg_node'],
         avg_path=topsis_out['avg_path'],
-        avg_exec=topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request']
+        avg_exec=topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'],
+        total_nodes=topsis_out['total_nodes'],
+        total_links=topsis_out['total_links']
     )
     
 
@@ -139,7 +149,9 @@ def exec_parser(tot=2):
         avg_link=parser_out[0]['avg_link'],
         avg_node=parser_out[0]['avg_node'],
         avg_path=parser_out[0]['avg_path'],
-        avg_exec=parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request']
+        avg_exec=parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request'],
+        total_nodes=parser_out[0]['total_nodes'],
+        total_links=parser_out[0]['total_links']
     )
     
     printToExcel(
@@ -158,13 +170,15 @@ def exec_parser(tot=2):
         avg_link=parser_out[1]['avg_link'],
         avg_node=parser_out[1]['avg_node'],
         avg_path=parser_out[1]['avg_path'],
-        avg_exec=parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request']
+        avg_exec=parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request'],
+        total_nodes=parser_out[1]['total_nodes'],
+        total_links=parser_out[1]['total_links']
     )
 
 
 def exec_vrmap(tot=7):
     vrmap_out = vrmap()
-    sleep(tot*7)
+    sleep(tot*5)
     printToExcel(
         algorithm='VRMAP',
         revenue=vrmap_out['revenue'],
@@ -181,13 +195,15 @@ def exec_vrmap(tot=7):
         avg_link=vrmap_out['avg_link'],
         avg_node=vrmap_out['avg_node'],
         avg_path=vrmap_out['avg_path'],
-        avg_exec=vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request']
+        avg_exec=vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request'],
+        total_nodes=vrmap_out['total_nodes'],
+        total_links=vrmap_out['total_links']
     )
 
 
 def exec_rethinking(tot=15):
     rethinking_out = rethinking()
-    sleep(tot*15)
+    sleep(tot*10)
 
     printToExcel(
         algorithm='RETHINKING',
@@ -205,13 +221,15 @@ def exec_rethinking(tot=15):
         avg_link=rethinking_out['avg_link'],
         avg_node=rethinking_out['avg_node'],
         avg_path=rethinking_out['avg_path'],
-        avg_exec=rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request']
+        avg_exec=rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request'],
+        total_nodes=rethinking_out['total_nodes'],
+        total_links=rethinking_out['total_links']
     )
 
 
 def printToExcel(algorithm='', revenue='', total_cost='', revenuetocostratio='', accepted='', total_request='', 
 embeddingratio='', pre_resource='', post_resource='',consumed='',avg_bw='',avg_crb='',avg_link='',
-avg_node='',avg_path='',avg_exec=''):
+avg_node='',avg_path='',avg_exec='', total_nodes='', total_links=''):
 
     output_dict["algorithm"].append(algorithm)
     output_dict["revenue"].append(revenue)
@@ -229,35 +247,48 @@ avg_node='',avg_path='',avg_exec=''):
     output_dict["avg_node"].append(avg_node)
     output_dict["avg_path"].append(avg_path)
     output_dict["avg_exec"].append(avg_exec)
+    output_dict["total_nodes"].append(total_nodes)
+    output_dict["total_links"].append(total_links)
 
+    addToExcel()
 
+def addToExcel():
+    geeky_file = open('geekyfile', 'wb')
+    pickle.dump(output_dict, geeky_file)
+    geeky_file.close()
 
-def main(for_automate, vne):
+def main(substrate, vne):
     tot=0
-    ls = [3]
+    ls = [10, 30, 45]
     for req_no in ls:
         tot += 1
         print(f"\n\treq_no: {req_no}\n")
-        substrate, vne_list = for_automate(req_no)
         # setup_logger('log1','vikor.log')
         # setup_logger('log2','greedy.log')
-        try:
-            iteration = int(input("Enter how many times to repeat (int only) : "))
-        except:
-            iteration = 1
+        # try:
+        #     iteration = int(input("Enter how many times to repeat (int only) : "))
+        # except:
+        #     iteration = 1
+        iteration = 3
+        iteration = max(iteration, 1)
         cnt=0
         while cnt<iteration:
             vne_list = vne(no_requests=req_no)
             config.substrate = copy.deepcopy(substrate)
             config.vne_list = copy.deepcopy(vne_list)
 
-            exec_greedy(tot)
-            exec_vikor(tot)
-            exec_topsis(tot)
-            exec_parser(tot)
-            exec_vrmap(tot)
-            exec_rethinking(tot)
+            # Uncomment those functions which to run, comment all other. for ex if want to run greedy algorithm only leave
+            # exec_greedy() uncommented and comment all other (exec_vikor(), exec_topsis(), exec_parser(), exec_vrmap(), exec_rethinking())
             
+            exec_greedy(tot)        #Runs GREEDY algorithm
+            exec_vikor(tot)         #Runs VIKOR algorithm
+            exec_topsis(tot)        #Runs TOPSIS algorithm
+            exec_parser(tot)        #Runs PARSER algorithm
+            exec_vrmap(tot)         #Runs VRMAP algorithm
+            exec_rethinking(tot)    #Runs RETHINKING algorithm
+            
+            if((cnt+1)%2==0):
+                print(f'\n\tFor REQUEST {req_no} ITERATION {cnt+1} COMPLETED\n\n')
             printToExcel()
             cnt += 1
     
@@ -272,36 +303,58 @@ def main(for_automate, vne):
 ##                                                                                   ##
 #######################################################################################
 #######################################################################################
+def generateSubstrate(for_automate, pickle_name):
+    substrate, _ = for_automate(1)
+    geeky_file = open(pickle_name, 'wb')
+    pickle.dump(substrate, geeky_file)
+    geeky_file.close()
 
-def runRandomExtraction():
+def extractSubstrate(pickle_file):
+    filehandler = open(pickle_file, 'rb')
+    substrate = pickle.load(filehandler)
+    return substrate
+
+def runRandomExtraction(pickle_name):
+    substrate = extractSubstrate(str(pickle_name))
     printToExcel()
     for _ in range(3):
         printToExcel(pre_resource='RANDOM')
     printToExcel()
     print("\nRandom Extraction\n")
-    main(graph_extraction.for_automate, vne)
+    main(substrate, vne)
 
-def runUniformExtraction():
+def runUniformExtraction(pickle_name):
+    substrate = extractSubstrate(str(pickle_name))
     printToExcel()
     for _ in range(3):
         printToExcel(pre_resource='UNIFORM')
     printToExcel()
     print("\nUNIFORM Extraction\n")    
-    main(graph_extraction_uniform.for_automate, vne_u)
+    main(substrate, vne_u)
 
-def runPoissionExtraction():
+def runPoissionExtraction(pickle_name):
+    substrate = extractSubstrate(str(pickle_name))
     printToExcel()
     for _ in range(3):
         printToExcel(pre_resource='POISSION')
     printToExcel()
     print("\nPOISSON Extraction\n")
-    main(graph_extraction_poisson.for_automate, vne_p)
+    main(substrate, vne_p)
+
 
 if __name__ == "__main__":
 
-    runRandomExtraction()
-    runUniformExtraction()
-    runPoissionExtraction()
+    file_exists = os.path.exists('1_random') or os.path.exists('1_uniform') or os.path.exists('1_poission')
+    print(file_exists)
+    # file_exists = False       #Manually set, if want to update a substrate pickle
+    if(file_exists==False):
+        # getSubstrates(graph_extraction.for_automate, str(1)+'_random')        #Random Distribution
+        generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform')    #Uniform Distribution
+        # getSubstrates(graph_extraction_poisson.for_automate, str(1)+'_poission')    #Poission Distribution
+
+    # runRandomExtraction('1_uniform')
+    runUniformExtraction('1_uniform')
+    # runPoissionExtraction('1_uniform')
     
     excel = pd.DataFrame(output_dict)
-    excel.to_excel("test.xlsx")
+    excel.to_excel("result.xlsx")

@@ -418,6 +418,61 @@ def generateDelay(vneRequest, original_net):
                 delay[(i,j)] = original_net.delay[(str(i-1),str(j-1))]
     return delay
 
+def BFS(src, dest, v, pred, dist, weight, vnr):
+    queue = []
+    visited = []
+    visited = [False for i in range(v+1)]
+    for i in range(v+1):
+        dist[i] = 1000000
+        pred[i] = -1
+    visited[int(src)] = True
+    dist[int(src)] = 0
+    queue.append(src)
+    while len(queue) != 0:
+        u = queue[0]
+        queue.pop(0)
+        for i in vnr[int(u)]:
+            if visited[int(i)] == False :
+                visited[int(i)] = True
+                dist[int(i)] = dist[int(u)] + 1
+                pred[int(i)] = u
+                queue.append(i)
+                if int(i) == int(dest):
+                    return True
+    return False
+
+def findShortest(s, dest, weight, vnr):
+    v = len(vnr.keys())
+    pred = [0 for i in range(v+1)]
+    dist = [0 for i in range(v+1)]
+    ls = []
+    if BFS(s, dest, v, pred, dist, weight,vnr) == False:
+        return ls
+    path = []
+    crawl = dest
+    crawl = dest
+    path.append(crawl)
+
+    while pred[int(crawl)] != -1:
+        path.append(pred[int(crawl)])
+        crawl = pred[int(crawl)]
+
+    for i in range(len(path) - 1, -1, -1):
+        ls.append(path[i])
+
+    return ls
+    
+def findAvgPathLength(vneRequest):
+    cnt = 0            
+    for node1 in vneRequest:
+        for node2 in vneRequest:
+            if(node1 != node2):
+                path = findShortest(str(node1), str(node2), 0, vneRequest)
+                cnt += len(path)-1
+    total_nodes = len(vneRequest.keys())
+    cnt /= (total_nodes)*(total_nodes-1)
+    return cnt
+
 def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
                        page_rank=True):
     accepted = []
@@ -431,6 +486,9 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     failed_vne = 0
     path_cnt=0
     vl_cnt=0
+    total_vnr_nodes = 0
+    total_vnr_links = 0
+    avg_path_length = 0
     for vneContainer in vneList:
         vneRequest = vneContainer[0]
         vneLoc = vneContainer[1]
@@ -438,6 +496,9 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
         vneCRB = vneContainer[3]
         vneLR = vneContainer[4]
         vneDelay = vneContainer[5]
+        total_vnr_nodes += len(vneRequest)
+        for i in vneRequest.values():
+            total_vnr_links += len(i)
         # total_vne_revenue += vneContainer[-2]
         log.info(f"crb: {sum(vnelinkBandWidth.values())//2} bw: {sum(vneCRB.values())}")
         log.info("\nEmbedding for virtual network request: %s of revenue: %s$"%
@@ -467,7 +528,7 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
             for node in link_map_dict:
                 path_cnt +=len(link_map_dict[node])
                 vl_cnt += 1
-
+            avg_path_length += findAvgPathLength(vneRequest)
             accepted.append(vneContainer)
             log.info("\ncost incurred for embedding vne %s is %s$" % (vneContainer[
                                                                     -1], _ncost))
@@ -492,7 +553,7 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     no_cost = pre_sub_nodecost-post_sub_nodecost
     ed_cost = pre_sub_edgecost-post_sub_edgecost
 
-    
+    avg_path_length /= (total_vne-failed_vne)
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
     
@@ -519,6 +580,8 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
             "avg_node": -1,
             "avg_path": -1,
             "avg_exec": (duration),
+            "total_nodes": total_vnr_nodes,
+            "total_links": total_vnr_links,
         }
         return output_dict
     log.info(f"The revenue to cost ratio is {(total_vne_revenue/total_vne_cost)*100:.4f}%")
@@ -531,7 +594,7 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     log.info(f"Substrate before embedding CRB: {pre_sub_nodecost} BW: {pre_sub_edgecost} total: {pre_sub_nodecost+pre_sub_edgecost}")
     log.info(f"Substrate after embedding CRB: {post_sub_nodecost} BW: {post_sub_edgecost} total: {post_sub_nodecost+post_sub_edgecost}")
     log.info(f"Substrate consumed CRB: {no_cost} BW: {ed_cost} total: {no_cost+ed_cost}\n")
-    log.info(f"Average Path Length {(path_cnt/vl_cnt):.4f}\n")
+    log.info(f"Average Path Length {avg_path_length:.4f}\n")
     log.info(f"Average BW utilization {(ed_cost/pre_sub_edgecost)*100:.4f}%")
     log.info(f"Average CRB utilization {(no_cost/pre_sub_nodecost)*100:.4f}%")
     log.info(f"Average Execution time {duration/total_vne}")
@@ -551,8 +614,10 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
         "avg_crb": (no_cost/pre_sub_nodecost)*100,
         "avg_link": (utilized_links/len(snLinkBandWidth))*100,
         "avg_node": (utilized_nodes/len(snCRB))*100,
-        "avg_path": (path_cnt/vl_cnt),
+        "avg_path": avg_path_length,
         "avg_exec": (duration),
+        "total_nodes": total_vnr_nodes,
+        "total_links": total_vnr_links,
     }
     return output_dict
 

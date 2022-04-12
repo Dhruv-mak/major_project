@@ -124,6 +124,17 @@ def select_random_path(req_map, vne_list, req_no, all_paths, substrate):
         counter += 1
     return population
 
+def findAvgPathLength(vnr):
+    cnt=0
+    for node1 in range(vnr.nodes):
+        for node2 in range(vnr.nodes):
+            if(node1 != node2):
+                path = vnr.findShortestPath(str(node1), str(node2), 0)
+                cnt += len(path)-1
+    total_nodes = vnr.nodes
+    cnt /= (total_nodes)*(total_nodes-1)
+    return cnt
+
 
 def edge_map(substrate, virtual, req_no, req_map, vne_list):
     substrate_copy = copy.deepcopy(substrate)
