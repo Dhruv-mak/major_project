@@ -2,7 +2,7 @@ import pickle
 with open('input.pickle', 'rb') as handle:
     b = pickle.load(handle)
 
-sn_graph=b.et("substrate")
+sn_graph=b.get("substrate")
 nodes_sn_graph=sn_graph.nodes
 print(nodes_sn_graph)
 

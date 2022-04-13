@@ -1,0 +1,27 @@
+1. In Node_link_Mapping
+D.76. After finding all shortest path between source and destination based on path length
+How we are selecting a path for the mapping of virtual link on Substrate link
+98
+97 Decrementing Twice why ?? confusing
+
+
+
+2.  in Entropy
+***# Looks like wrong values are not matching no need to multiply with e for natural log Corrected
+Check "nvalue" values are printing one extra time for both VNR-12 but 13and PN-28 but 29
+
+Weights values not matching
+# Weights are not printing the right value  Even we can print negative value also but not displaying
+
+  in Entropy
+  line 63 and 64 need to perform over all sum of Pij*LN(Pij) for each attribute
+
+3. Eigen centrality is not printing write value first iteration is right but remaining is wrong
+
+4. in Betweenness centrality
+69
+print the VNR or SN of which we are printing the node
+
+5. Include pickle file for readning data
+
+6. Mapping will chekck

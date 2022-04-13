@@ -1,6 +1,5 @@
 import random
 import copy
-import numpy as np
 
 class Parameters:
     def __init__(
@@ -43,15 +42,15 @@ class Graph:
         self.delay = dict()
         self.parameters = parameters
         for a, b in edges:
-            self.edge_weights[(a, b)] = int(np.random.uniform(lower_edge, upper_edge))
+            self.edge_weights[(a, b)] = random.randint(lower_edge, upper_edge)
             self.edge_weights[(b, a)] = self.edge_weights[(a, b)]
-            self.delay[(a, b)] = int(np.random.uniform(parameters.lower_delay, parameters.upper_delay))
+            self.delay[(a, b)] = random.randint(parameters.lower_delay, parameters.upper_delay)
             self.delay[(b, a)] = self.delay[(a, b)]
         for i in range(self.nodes):
-            self.node_weights[i] = int(np.random.uniform(lower_node, upper_node))
+            self.node_weights[i] = random.randint(lower_node, upper_node)
             l = list()
-            l.append(int(np.random.uniform(parameters.lower_x_pos, parameters.upper_x_pos)))
-            l.append(int(np.random.uniform(parameters.lower_y_pos, parameters.upper_y_pos)))
+            l.append(random.randint(parameters.lower_x_pos, parameters.upper_x_pos))
+            l.append(random.randint(parameters.lower_y_pos, parameters.upper_y_pos))
             self.node_pos[i] = tuple(l)
         for i in range(self.nodes):
             self.neighbours[i] = set()
