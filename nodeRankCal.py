@@ -71,6 +71,8 @@ def getValueOfAllAttributes(nodeRank,graph,nodeLoc,linkBandWidth,nodeCRB):
         nodeRank[i]['strength'] = getStrengthOfNode(graph,linkBandWidth,i)
         nodeRank[i]['distance'] = getDistanceInFormOfDictionary(allPairShortestPath[i-1],i)
         nodeRank[i]['farness'] = getFarness(i, allPairShortestPath[i-1])
+        if(nodeRank[i]['farness'] < 1):     # Handling division by zero error while calculating "closeness"
+            nodeRank[i]['farness'] = 1
         nodeRank[i]['closeness'] = 1/nodeRank[i]['farness']
         nodeRank[i]['rank'] = -1
     for i in nodeRank:
