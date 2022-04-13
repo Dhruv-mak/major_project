@@ -16,14 +16,13 @@ class NetworkAttribute(object):
     self.bwd_unit_cost = 1
     self.node_degree = {}
 
-  def generate_crb(self):
+  def generate_crb(self, original_net):
     if self.network_crb:
       return self.network_crb
     network_crb = dict()
     for i in self.network:
-      network_crb[i] = random.randint(100, 1000) if self.virtual \
-            else random.randint(1000, 5000)
-    print ("Initial Node CRB %s" % network_crb)
+      network_crb[i] = original_net.node_weights[i]
+    #print ("Initial Node CRB %s" % network_crb)
     self.network_crb = network_crb
     return network_crb
 
@@ -47,7 +46,7 @@ class NetworkAttribute(object):
   def get_node_degree(self):
     return self.node_degree
 
-  def generate_node_bandwidth(self):
+  def generate_node_bandwidth(self, original_net):
     node_bandwidth = dict()
     ## calculate link bandwidth
     if not self.link_bandwidth:
@@ -56,36 +55,35 @@ class NetworkAttribute(object):
           if (j, i) in self.link_bandwidth:
             self.link_bandwidth[(i, j)] = self.link_bandwidth[(j, i)]
           else:
-            self.link_bandwidth[(i, j)] = random.randint(100, 1000) if self.virtual \
-              else random.randint(1000, 5000)
+            self.link_bandwidth[(i, j)] = original_net.edge_weights[(str(i), str(j))]
     # calulate bandwidth strength of individual node
     for _node in self.network:
       node_wt = 0
       for _link in self.network[_node]:
         node_wt += self.link_bandwidth[(_node, _link)]
       node_bandwidth[_node] = node_wt
-    print ("Initial Node Bandwidth %s" % node_bandwidth)
+    #print ("Initial Node Bandwidth %s" % node_bandwidth)
     self.network_bdwth = node_bandwidth
     return node_bandwidth
 
-  def normalized_crb(self):
-    nt_crb = self.generate_crb()
+  def normalized_crb(self, original_net):
+    nt_crb = self.generate_crb(original_net)
     total_n_value = math.sqrt(sum(value ** 2 for value in nt_crb.values()))
     normalised_crb = {}
     for elem in nt_crb:
       normalised_crb[elem] = float(nt_crb[elem])/float(total_n_value)
     _normalised_crb = {ky:round(vl, 2) for ky, vl in normalised_crb.items()}
-    print( 'Normalised CRB : %s' % _normalised_crb)
+    #print( 'Normalised CRB : %s' % _normalised_crb)
     return _normalised_crb
 
-  def normalized_node_bandwidth(self):
-    nt_bwdth = self.generate_node_bandwidth()
+  def normalized_node_bandwidth(self, original_net):
+    nt_bwdth = self.generate_node_bandwidth(original_net)
     total_n_value = math.sqrt(sum(value ** 2 for value in nt_bwdth.values()))
     normalised_bwdth = {}
     for elem in nt_bwdth:
       normalised_bwdth[elem] = float(nt_bwdth[elem])/float(total_n_value)
     _normalised_bwdth = {ky:round(vl, 2) for ky, vl in normalised_bwdth.items()}
-    print( 'Normalised Node Bandwidth : %s' % _normalised_bwdth)
+    #print( 'Normalised Node Bandwidth : %s' % _normalised_bwdth)
     return _normalised_bwdth
 
   def normalized_node_degree(self):
@@ -96,5 +94,5 @@ class NetworkAttribute(object):
       normalised_degree[elem] = float(nt_degree[elem]) / float(total_n_value)
     _normalised_degree = {ky: round(vl, 2) for ky, vl in
                        normalised_degree.items()}
-    print ('Normalised Degree : %s' % _normalised_degree)
+    #print ('Normalised Degree : %s' % _normalised_degree)
     return _normalised_degree

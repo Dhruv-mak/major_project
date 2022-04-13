@@ -1,7 +1,7 @@
 import math
 import numpy
 import networkx as nx
-
+import logging
 
 class WeightMatrix(object):
   def __init__(self, network, crb, bandwidth, betweenness, eigen, degree):
@@ -90,8 +90,7 @@ class WeightMatrix(object):
     entp_measure_mx = [1 - (k * vl) for vl in sum_matrix]
     entp_measure = sum(entp_measure_mx)
     weight_mx = [evl/entp_measure for evl in entp_measure_mx]
-    print("KK Weight_mx" )
-    print (weight_mx) # LIST OF WEIGHTS
+    print(f"\nKK Weight_mx {weight_mx}" )   #LIST OF WEIGHTS
 # TOPSIS will start here
     #get weighted normalized matirx
     weighted_nor_mx = [[0, 0, 0, 0, 0, 0] for i in range(len(self.network))]
@@ -137,12 +136,13 @@ class WeightMatrix(object):
     ## generate rank for nodes
     node_rank = {key: rank for rank, key in enumerate(sorted(rank_dict,
                                                              key=rank_dict.get, reverse=True), 1)}
-    print ('+' * 50 + '\n')
-    print ('Rank generation value for nodes \n%s'% rank_dict)
-    print
-    print ('Rank generated for nodes')
-    for i in node_rank:
-      print( 'Node %s Rank is %s' % (i,node_rank[i]))
+    print ('+' * 100 + '\n')
+    print (f'Rank generation value for nodes \n\t{rank_dict}\n')
+  
+    print (f'Rank generated for nodes (Node\tRank) \n\t{node_rank}\n')
+
+    logging.info(f'Rank generation value for nodes \n\t{rank_dict}')
+    logging.info(f'Rank generated for nodes (Node\tRank) \n\t{node_rank}')
     return node_rank
 
 

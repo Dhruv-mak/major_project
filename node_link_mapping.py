@@ -46,18 +46,21 @@ def calculate_revenue(vne_list):
   return vne_revenue_list
 
 
-def sort_vne_revenue(vne_list):# Assending order
+def sort_vne_revenue(vne_list, original_vne_list):# Assending order
   vne_crb_bd_list = []
+  index = 0
   for _vne in vne_list:
     vne_node_attrib = NetworkAttribute(_vne, virtual=True)
-    node_norm_bw = vne_node_attrib.normalized_node_bandwidth()
-    node_norm_crb = vne_node_attrib.normalized_crb()
+    node_norm_bw = vne_node_attrib.normalized_node_bandwidth(original_vne_list[index])
+    node_norm_crb = vne_node_attrib.normalized_crb(original_vne_list[index])
     node_bw = vne_node_attrib.get_network_bandwidth()
     node_crb = vne_node_attrib.get_network_crb()
     link_bw = vne_node_attrib.get_link_bandwidth()
     node_degree = vne_node_attrib.normalized_node_degree()
     vne_crb_bd_list.append([_vne, node_bw, node_crb, node_norm_bw,
                             node_norm_crb, link_bw, node_degree])
+    index += 1
+  
   vne_rv = calculate_revenue(vne_crb_bd_list)
   for i in range(len(vne_rv)):
     for j in range(len(vne_rv) - 1):
@@ -158,12 +161,12 @@ def link_mapping(sn_request, sn_link_bandwidth,
     return False, tmp_sn_link_bandwidth
 
 
-def node_link_mapping(sn, vneRequests):
+def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
   # sn_btw_cnt = BetweennessCentrality(sn).betweenness_centrality()
   # sn_eigned_vct = EigenvectorCentrality(sn).eigenvector_centrality()
   sn_btw_cnt = nx.betweenness_centrality(nx.DiGraph(sn))      #ADDED - inbuilt function for betweeness centrality
   sn_eigned_vct = nx.eigenvector_centrality(nx.DiGraph(sn))   #ADDED - inbuilt function for eigenvector centrality
-  sorted_vne_req = sort_vne_revenue(vneRequests)
+  sorted_vne_req = sort_vne_revenue(vneRequests, original_vne_list)
   count = 0
   sn_crb = {}
   sn_link_bw = {}
@@ -176,11 +179,13 @@ def node_link_mapping(sn, vneRequests):
     log.info("Request number is %s" % count)
 
     _node_obj = NetworkAttribute(sn, crb=sn_crb, link_bandwidth=sn_link_bw)
-    sn_node_bw = _node_obj.normalized_node_bandwidth()
-    sn_node_crb = _node_obj.normalized_crb()
+    sn_node_bw = _node_obj.normalized_node_bandwidth(original_substrate)
+    sn_node_crb = _node_obj.normalized_crb(original_substrate)
     sn_crb = _node_obj.get_network_crb()
     sn_link_bw = _node_obj.get_link_bandwidth()
     sn_node_degree=_node_obj.normalized_node_degree()
+    print(f'\n\nComputing Substrate Resources for VNR {count}\n')
+    log.info(f'Computing Substrate Resources for VNR {count}')
     sn_rank = WeightMatrix(sn, sn_node_crb, sn_node_bw, sn_btw_cnt,
                              sn_eigned_vct,sn_node_degree).compute_entropy_measure_matrix()
     sorted_node_dict = sort_node_rank(sn_rank)
@@ -196,6 +201,8 @@ def node_link_mapping(sn, vneRequests):
     btw_cnt = nx.betweenness_centrality(nx.DiGraph(_vnode[0]))
     eigned_vct = nx.eigenvector_centrality(nx.DiGraph(_vnode[0]))
 
+    print(f"\n\nComputing for VNR {count}\n")
+    log.info(f"Computing for VNR {count}")
     node_rank = WeightMatrix(_vnode[0], _vnode[4], _vnode[3], btw_cnt,
                              eigned_vct, vne_degree).compute_entropy_measure_matrix() # Compute Weight of the attributes
     sorted_vnode_dict = sort_node_rank(node_rank)
@@ -278,37 +285,45 @@ def node_link_mapping(sn, vneRequests):
         log.info("+" * 30)
     count += 1
   log.info ('\n')
-  log.info("+" * 30)
+  log.info("+" * 100)
   log.info ("Total request mapped successfully: %s\n\t\tMapped requests: %s" %(len(mapped_request), repr(mapped_request)))
   log.info("\n")
   log.info( "Total request left unmapped: %s\n\t\tUnmapped requests: %s" %(len(unmapped_request), repr(unmapped_request)))
+  print('\n')
+  print("+" * 100)
+  print("Total request mapped successfully: %s\n" %(len(mapped_request)))
+  print( "Total request left unmapped: %s\n" %(len(unmapped_request)))
 
 
-# sn = {1: [2, 3], 2: [1, 3, 4], 3: [1, 2, 4, 5, 6], 4: [2, 3, 6, 7], 5: [3, 6], 6: [3, 4, 5, 7], 7: [4, 6]}
-# vne = [{1: [2, 3], 2: [1, 3], 3: [2, 1]}]
- #vne = [{1:[2],2:[1]}]
-f = open("input.pickle", "rb")
-sn, vne_obj = helper.read_pickle()
-orginal_substrate, original_vne_list = copy.deepcopy(sn), copy.deepcopy(vne_obj)
-sn = sn.neighbours
-substrate = {}
-vne_list = []
-vne_graph = {}
-vne = [vne_obj[i].neighbours for i in range(len(vne_obj))]
-for key, value in sn.items():
-  substrate[key] = [int(i) for i in value]
-for i in range(len(vne)):
+def main():
+  # sn = {1: [2, 3], 2: [1, 3, 4], 3: [1, 2, 4, 5, 6], 4: [2, 3, 6, 7], 5: [3, 6], 6: [3, 4, 5, 7], 7: [4, 6]}
+  # vne = [{1: [2, 3], 2: [1, 3], 3: [2, 1]}]
+  #vne = [{1:[2],2:[1]}]
+  sn, vne_obj = helper.read_pickle()
+  original_substrate, original_vne_list = copy.deepcopy(sn), copy.deepcopy(vne_obj)
+  sn = sn.neighbours
+  substrate = {}
+  vne_list = []
   vne_graph = {}
-  for key, value in vne[i].items():
-    for j in value:
-      if key not in vne_graph:
-        vne_graph[key] = [int(j)]
-      else:
-        vne_graph[key].append(int(j))
-    # vne_graph[key] = [int(i) for i in value]
-  vne_list.append(vne_graph)
+  vne = [vne_obj[i].neighbours for i in range(len(vne_obj))]
+  for key, value in sn.items():
+    substrate[key] = [int(i) for i in value]
+  for i in range(len(vne)):
+    vne_graph = {}
+    for key, value in vne[i].items():
+      for j in value:
+        if key not in vne_graph:
+          vne_graph[key] = [int(j)]
+        else:
+          vne_graph[key].append(int(j))
+      # vne_graph[key] = [int(i) for i in value]
+    vne_list.append(vne_graph)
 
-node_link_mapping(substrate, vne_list)
+  node_link_mapping(substrate, vne_list, original_substrate, original_vne_list)
 
-#node_link_mapping(sn, vne)
-# ,{1:[2],2:[1,3],3:[2]},{1:[2],2:[1]},{1:[2,3],2:[1],3:[1]}
+  #node_link_mapping(sn, vne)
+  # ,{1:[2],2:[1,3],3:[2]},{1:[2],2:[1]},{1:[2,3],2:[1],3:[1]}
+
+
+if __name__ == '__main__':
+  main()
