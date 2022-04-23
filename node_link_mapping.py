@@ -261,7 +261,6 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
  
 
   start_time = datetime.now().time()
-  susbstrate_original = copy.deepcopy(sn)
   # sn_btw_cnt = BetweennessCentrality(sn).betweenness_centrality()
   # sn_eigned_vct = EigenvectorCentrality(sn).eigenvector_centrality()
   sn_btw_cnt = nx.betweenness_centrality(nx.DiGraph(sn))      #ADDED - inbuilt function for betweeness centrality
@@ -286,8 +285,9 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
     sn_node_crb = _node_obj.normalized_crb(original_substrate)
     sn_crb = _node_obj.get_network_crb()
     sn_link_bw = _node_obj.get_link_bandwidth()
-    original_sn_crb = copy.deepcopy(sn_crb)
-    original_sn_bw = copy.deepcopy(sn_link_bw)
+    if (count==0):
+      original_sn_crb = copy.deepcopy(sn_crb)
+      original_sn_bw = copy.deepcopy(sn_link_bw)
     sn_node_degree=_node_obj.normalized_node_degree()
     print(f'\n\nComputing Substrate Resources for VNR {count}\n')
     log.info(f'Computing Substrate Resources for VNR {count}')
