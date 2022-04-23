@@ -1,6 +1,7 @@
 
 import copy
 from collections import OrderedDict, deque
+from datetime import datetime, date
 import logging
 from random import random
 from betweenness_centrality import BetweennessCentrality
@@ -127,7 +128,92 @@ def generate_paths(request):
       edgesToBeMapped.add((i, j))
   return edgesToBeMapped
 
+def BFS(vnr, src, dest, v, pred, dist, weight):
+    queue = []
+    visited = [False for i in range(v)]
+    for i in range(v):
+        dist[i] = 1000000
+        pred[i] = -1
+    visited[int(src)] = True
+    dist[int(src)] = 0
+    queue.append(src)
+    while len(queue) != 0:
+        u = queue[0]
+        queue.pop(0)
+        for i in vnr[int(u)]:
+            if visited[int(i)] == False :
+                visited[int(i)] = True
+                dist[int(i)] = dist[int(u)] + 1
+                pred[int(i)] = u
+                queue.append(i)
+                if int(i) == int(dest):
+                    return True
 
+    return False
+
+def findShortestPath(vnr, s, dest, weight):
+    v = len(vnr.keys())
+    pred = [0 for i in range(v)]
+    dist = [0 for i in range(v)]
+    ls = []
+    if BFS(vnr, s, dest, v, pred, dist, weight) == False:
+        return ls
+    path = []
+    crawl = dest
+    crawl = dest
+    path.append(crawl)
+
+    while pred[int(crawl)] != -1:
+        path.append(pred[int(crawl)])
+        crawl = pred[int(crawl)]
+
+    for i in range(len(path) - 1, -1, -1):
+        ls.append(path[i])
+
+    return ls
+
+def substract_sn(before_sn, after_sn):
+  bw_diff = 0
+  for edge in before_sn.keys():
+    bw_diff += before_sn[edge] - after_sn[edge]
+  # print(bw_diff//2)
+  return bw_diff//2
+
+def find_utilized_resources(original_sn_crb, original_sn_bw, sn_crb, sn_link_bw):
+  utilized_nodes_cnt=0
+  utilized_links_cnt = 0
+  node_cost = 0
+  edge_cost = 0
+  pre_edge_cost = 0
+  post_edge_cost = 0
+  pre_node_cost = 0
+  post_node_cost = 0
+  for node in original_sn_crb.keys():
+    if(original_sn_crb[node] != sn_crb[node]):
+      utilized_nodes_cnt += 1
+      node_cost += original_sn_crb[node] - sn_crb[node]
+    pre_node_cost += original_sn_crb[node]
+    post_node_cost += sn_crb[node]
+
+  for edge in original_sn_bw.keys():
+    if(original_sn_bw[edge] != sn_link_bw[edge]):
+      utilized_links_cnt += 1
+      edge_cost += original_sn_bw[edge]-sn_link_bw[edge]
+    pre_edge_cost += original_sn_bw[edge]
+    post_edge_cost += sn_link_bw[edge]
+  return utilized_nodes_cnt, utilized_links_cnt, node_cost, edge_cost, pre_edge_cost, post_edge_cost, pre_node_cost, post_node_cost
+
+def findAvgPathLength(vnr):
+    cnt=0
+    for node1 in vnr.keys():
+        for node2 in vnr.keys():
+            if(node1 != node2):
+                path = findShortestPath(vnr, str(node1), str(node2), 0)
+                cnt += len(path)-1
+    total_nodes = len(vnr.keys())
+    cnt /= (total_nodes)*(total_nodes-1)
+    return cnt
+  
 def link_mapping(sn_request, sn_link_bandwidth,
                  vn_request, vne_link_bandwidth, node_map_dict):
   tmp_sn_link_bandwidth = copy.deepcopy(sn_link_bandwidth)
@@ -162,12 +248,29 @@ def link_mapping(sn_request, sn_link_bandwidth,
 
 
 def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
+  log.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
+  log.info(f"\t\tTotal number of nodes and edges in substrate network is : {original_substrate.nodes} and {len(original_substrate.edges)} ")
+  temp = []
+  for node in range(original_substrate.nodes):
+      temp.append((node, original_substrate.node_weights[node]))
+  log.info(f"\t\tNodes of the substrate network with weight are : {temp}")
+  temp = []
+  for edge in original_substrate.edges:
+      temp.append((edge,original_substrate.edge_weights[edge]))
+  log.info(f"\t\tEdges of the substrate network with weight are : {temp}\n\n")
+ 
+
+  start_time = datetime.now().time()
+  susbstrate_original = copy.deepcopy(sn)
   # sn_btw_cnt = BetweennessCentrality(sn).betweenness_centrality()
   # sn_eigned_vct = EigenvectorCentrality(sn).eigenvector_centrality()
   sn_btw_cnt = nx.betweenness_centrality(nx.DiGraph(sn))      #ADDED - inbuilt function for betweeness centrality
   sn_eigned_vct = nx.eigenvector_centrality(nx.DiGraph(sn))   #ADDED - inbuilt function for eigenvector centrality
   sorted_vne_req = sort_vne_revenue(vneRequests, original_vne_list)
   count = 0
+  revenue = 0
+  total_cost = 0
+  average_path_length = 0
   sn_crb = {}
   sn_link_bw = {}
   unmapped_request = []
@@ -175,7 +278,7 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
   while count != len(sorted_vne_req):
     log.info("\n\n")
     log.info("-" * 30)
-    log.info( "length of request: %s" % len(sorted_vne_req))
+    log.info("length of request: %s" % len(sorted_vne_req))
     log.info("Request number is %s" % count)
 
     _node_obj = NetworkAttribute(sn, crb=sn_crb, link_bandwidth=sn_link_bw)
@@ -183,6 +286,8 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
     sn_node_crb = _node_obj.normalized_crb(original_substrate)
     sn_crb = _node_obj.get_network_crb()
     sn_link_bw = _node_obj.get_link_bandwidth()
+    original_sn_crb = copy.deepcopy(sn_crb)
+    original_sn_bw = copy.deepcopy(sn_link_bw)
     sn_node_degree=_node_obj.normalized_node_degree()
     print(f'\n\nComputing Substrate Resources for VNR {count}\n')
     log.info(f'Computing Substrate Resources for VNR {count}')
@@ -196,6 +301,8 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
     vne_bwdth = _vnode[5]
     vne_req = _vnode[0]
     vne_degree=_vnode[6]
+    log.info(f'\tnodes with weights {vne_crb}')
+    log.info(f'\tedges with weights {vne_bwdth}')
     # btw_cnt = BetweennessCentrality(_vnode[0]).betweenness_centrality()
     # eigned_vct = EigenvectorCentrality(_vnode[0]).eigenvector_centrality()
     btw_cnt = nx.betweenness_centrality(nx.DiGraph(_vnode[0]))
@@ -271,11 +378,18 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
     if len(rejection_set) == 0:
       log.info ('call for link embedding')
       log.info (node_mapping_list)
+      sn_link_bw_before_mapping = copy.deepcopy(sn_link_bw)
       res, sn_band = link_mapping(sn, sn_link_bw,vne_req, vne_bwdth, node_map_dict)
       if res:
         sn_crb = copy.deepcopy(sn_crb)
         sn_link_bw = copy.deepcopy(sn_band)
         mapped_request.append(_vnode)
+        # revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
+        revenue += sum(vne_crb.values()) + sum(vne_bwdth.values())//2
+        # print(revenue)
+        total_cost += sum(vne_crb.values())+substract_sn(sn_link_bw_before_mapping,sn_link_bw)
+        # print(total_cost)
+        average_path_length += findAvgPathLength(sorted_vne_req[count][0]) 
         log.info ("Request %s placed successfully" % repr(_vnode[0]))
       else:
         sn_crb = copy.deepcopy(tmp_sn_crb)
@@ -284,16 +398,55 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
         log.info ("Request %s failed to placed" % repr(_vnode[0]))
         log.info("+" * 30)
     count += 1
+
+  utilized_node, utilized_links, node_cost, edge_cost, pre_edge_cost, post_edge_cost, pre_node_cost, post_node_cost = find_utilized_resources(original_sn_crb, original_sn_bw, sn_crb, sn_link_bw)  
+  average_path_length /= len(mapped_request)
+  end_time = datetime.now().time()
+  duration = datetime.combine(date.min, end_time)-datetime.combine(date.min, start_time)
+
   log.info ('\n')
   log.info("+" * 100)
   log.info ("Total request mapped successfully: %s\n\t\tMapped requests: %s" %(len(mapped_request), repr(mapped_request)))
   log.info("\n")
   log.info( "Total request left unmapped: %s\n\t\tUnmapped requests: %s" %(len(unmapped_request), repr(unmapped_request)))
+  log.info("\n\n")
+  log.info(f"Total revenue is {revenue} and total cost is {total_cost}")
+  log.info(f"The revenue to cost ratio is {(revenue/total_cost)*100:.4f}%")
+  log.info(f"Total number of request embedded is {len(mapped_request)} out of {len(mapped_request)+len(unmapped_request)}")
+  log.info(f"Embedding ratio is {(len(mapped_request)/(len(mapped_request)+len(unmapped_request)))*100:.4f}%")
+  log.info(f"Total {utilized_node} nodes are used out of {len(sn_crb)}")
+  log.info(f"Total {utilized_links//2} links are utilized out of {len(sn_link_bw)//2}")
+  log.info(f"Average node utilization is {(utilized_node/len(sn_crb))*100:.4f}%")
+  log.info(f"Average link utilization is {(utilized_links/len(sn_link_bw))*100:.4f}%")
+  log.info(f"Available substrate before embedding CRB: {pre_node_cost} BW: {pre_edge_cost}")
+  log.info(f"Avilable substrate after embeddin CRB: {post_node_cost} BW: {post_edge_cost}")
+  log.info(f"Consumed Substrate CRB: {pre_node_cost-post_node_cost} BW: {pre_edge_cost-post_edge_cost}")
+  log.info(f"Average Path length is {average_path_length:.4f}")
+  log.info(f"Average BW utilization {(edge_cost/pre_edge_cost)*100:.4f}%")
+  log.info(f"Average CRB utilization {(node_cost/pre_node_cost)*100:.4f}%")
+  log.info(f"Average execution time {duration/len(mapped_request)} (HH:MM:SS)\n\n\n")
+ 
   print('\n')
   print("+" * 100)
   print("Total request mapped successfully: %s\n" %(len(mapped_request)))
   print( "Total request left unmapped: %s\n" %(len(unmapped_request)))
-
+  print("\n")
+  print(f"Total revenue is {revenue} and total cost is {total_cost}")
+  print(f"The revenue to cost ratio is {(revenue/total_cost)*100:.4f}%")
+  print(f"Total number of request embedded is {len(mapped_request)} out of {len(mapped_request)+len(unmapped_request)}")
+  print(f"Embedding ratio is {(len(mapped_request)/(len(mapped_request)+len(unmapped_request)))*100:.4f}%")
+  print(f"Total {utilized_node} nodes are used out of {len(sn_crb)}")
+  print(f"Total {utilized_links//2} links are utilized out of {len(sn_link_bw)//2}")
+  print(f"Average node utilization is {(utilized_node/len(sn_crb))*100:.4f}%")
+  print(f"Average link utilization is {(utilized_links/len(sn_link_bw))*100:.4f}%")
+  print(f"Available substrate before embedding CRB: {pre_node_cost} BW: {pre_edge_cost}")
+  print(f"Avilable substrate after embeddin CRB: {post_node_cost} BW: {post_edge_cost}")
+  print(f"Consumed Substrate CRB: {pre_node_cost-post_node_cost} BW: {pre_edge_cost-post_edge_cost}")
+  print(f"Average Path length is {average_path_length:.4f}")
+  print(f"Average BW utilization {(edge_cost/pre_edge_cost)*100:.4f}%")
+  print(f"Average CRB utilization {(node_cost/pre_node_cost)*100:.4f}%")
+  print(f"Average execution time {duration/len(mapped_request)} (HH:MM:SS)\n\n\n")
+ 
 
 def main():
   # sn = {1: [2, 3], 2: [1, 3, 4], 3: [1, 2, 4, 5, 6], 4: [2, 3, 6, 7], 5: [3, 6], 6: [3, 4, 5, 7], 7: [4, 6]}
