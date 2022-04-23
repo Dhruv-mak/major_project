@@ -203,7 +203,7 @@ def exec_vrmap(tot=7):
 
 def exec_rethinking(tot=15):
     rethinking_out = rethinking()
-    sleep(tot*10)
+    sleep(tot*4)
 
     printToExcel(
         algorithm='RETHINKING',
@@ -259,7 +259,7 @@ def addToExcel():
 
 def main(substrate, vne):
     tot=0
-    ls = [10, 30, 45]
+    ls = [200, 400, 600, 800, 1000]
     for req_no in ls:
         tot += 1
         print(f"\n\treq_no: {req_no}\n")
@@ -269,7 +269,7 @@ def main(substrate, vne):
         #     iteration = int(input("Enter how many times to repeat (int only) : "))
         # except:
         #     iteration = 1
-        iteration = 3
+        iteration = 10
         iteration = max(iteration, 1)
         cnt=0
         while cnt<iteration:
@@ -282,9 +282,9 @@ def main(substrate, vne):
             
             exec_greedy(tot)        #Runs GREEDY algorithm
             exec_vikor(tot)         #Runs VIKOR algorithm
-            exec_topsis(tot)        #Runs TOPSIS algorithm
+            # exec_topsis(tot)        #Runs TOPSIS algorithm
             exec_parser(tot)        #Runs PARSER algorithm
-            exec_vrmap(tot)         #Runs VRMAP algorithm
+            # exec_vrmap(tot)         #Runs VRMAP algorithm
             exec_rethinking(tot)    #Runs RETHINKING algorithm
             
             if((cnt+1)%2==0):
@@ -350,11 +350,11 @@ if __name__ == "__main__":
     if(file_exists==False):
         # getSubstrates(graph_extraction.for_automate, str(1)+'_random')        #Random Distribution
         generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform')    #Uniform Distribution
-        # getSubstrates(graph_extraction_poisson.for_automate, str(1)+'_poission')    #Poission Distribution
+        generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission')    #Poission Distribution
 
     # runRandomExtraction('1_uniform')
     runUniformExtraction('1_uniform')
-    # runPoissionExtraction('1_uniform')
+    runPoissionExtraction('1_poission')
     
     excel = pd.DataFrame(output_dict)
     excel.to_excel("result.xlsx")

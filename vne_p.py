@@ -4,7 +4,7 @@ from graph_p import Parameters
 from randomPoissonDistribution import randomPoissonNumber_rand as randomPoissonNumber
 
 
-def create_vne(min_nodes=2, max_nodes=5, no_requests=300, probability=0.4, mean=0.4):
+def create_vne(min_nodes=2, max_nodes=10, no_requests=300, probability=0.4, mean=0.4):
     # random_node_list_arr = np.random.uniform(min_nodes, max_nodes, no_requests)
     # random_node_list = [round(i) for i in random_node_list_arr]
     random_node_list = [randomPoissonNumber(min_nodes, max_nodes, mean) for _ in range(no_requests)]
