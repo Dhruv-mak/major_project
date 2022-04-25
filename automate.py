@@ -253,7 +253,7 @@ avg_node='',avg_path='',avg_exec='', total_nodes='', total_links=''):
     addToExcel()
 
 def addToExcel():
-    geeky_file = open('geekyfile', 'wb')
+    geeky_file = open('geekyfile.pickle', 'wb')
     pickle.dump(output_dict, geeky_file)
     geeky_file.close()
 
@@ -348,13 +348,13 @@ if __name__ == "__main__":
     print(file_exists)
     # file_exists = False       #Manually set, if want to update a substrate pickle
     if(file_exists==False):
-        # getSubstrates(graph_extraction.for_automate, str(1)+'_random')        #Random Distribution
-        generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform')    #Uniform Distribution
-        generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission')    #Poission Distribution
+        # getSubstrates(graph_extraction.for_automate, str(1)+'_random.pickle')        #Random Distribution
+        generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform.pickle')    #Uniform Distribution
+        generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission.pickle')    #Poission Distribution
 
-    # runRandomExtraction('1_uniform')
-    runUniformExtraction('1_uniform')
-    runPoissionExtraction('1_poission')
+    # runRandomExtraction('1_uniform.pickle')
+    runUniformExtraction('1_uniform.pickle')
+    runPoissionExtraction('1_poission.pickle')
     
     excel = pd.DataFrame(output_dict)
     excel.to_excel("result.xlsx")
