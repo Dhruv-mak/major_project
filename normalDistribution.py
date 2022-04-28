@@ -1,5 +1,3 @@
-from cmath import log, sqrt
-# from random import random
 import random
 import math
 
@@ -32,7 +30,7 @@ def boxMullerHelper():
 def boxMuller(mean, standard_deviation):
     return mean + boxMullerHelper()*standard_deviation
 
-def next(min, max):
+def normalNumber(min, max):
     deviations = 0.3
     while (True):
         mn = min + (max - min) / 2.0
@@ -47,5 +45,5 @@ def next(min, max):
 if __name__ == '__main__':
 
     for i in range(0,10):
-        x = next(2,4)
+        x = normalNumber(2,4)
         print(x)
