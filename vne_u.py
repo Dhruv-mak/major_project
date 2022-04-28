@@ -5,7 +5,7 @@ from graph_u import Parameters
 import numpy as np
 
 
-def create_vne(min_nodes=2, max_nodes=10, no_requests=5, probability=0.4):
+def create_vne(min_nodes=2, max_nodes=5, no_requests=1000, probability=0.4):
     random_node_list_arr = np.random.uniform(min_nodes, max_nodes, no_requests)
     random_node_list = [round(i) for i in random_node_list_arr]
     new_vne_req = []
