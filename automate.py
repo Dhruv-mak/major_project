@@ -8,12 +8,15 @@ from parser import main as parser
 from vrmap import main as vrmap
 from rethinking import main as rethinking
 from topsis import main as topsis
+from node_link_mapping import main as EAA
 from vne import create_vne as vne
 from vne_u import create_vne as vne_u
 from vne_p import create_vne as vne_p
+from vne_n import create_vne as vne_n
 import graph_extraction
 import graph_extraction_uniform
 import graph_extraction_poisson
+import graph_extraction_normal
 import logging
 import config
 import pickle
@@ -126,6 +129,31 @@ def exec_topsis(tot=1):
         avg_exec=topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'],
         total_nodes=topsis_out['total_nodes'],
         total_links=topsis_out['total_links']
+    )
+
+def exec_EAA(tot=1):
+    gred_out = EAA()
+    sleep(tot*1)
+    
+    printToExcel(
+        algorithm='EAA',
+        revenue=gred_out['revenue'],
+        total_cost=gred_out['total_cost'],
+        revenuetocostratio=(gred_out['revenue']/gred_out['total_cost'])*100,
+        accepted=gred_out['accepted'],
+        total_request=gred_out['total_request'],
+        embeddingratio=(gred_out['accepted']/gred_out['total_request'])*100,
+        pre_resource=gred_out['pre_resource'],
+        post_resource=gred_out['post_resource'],
+        consumed=gred_out['pre_resource']-gred_out['post_resource'],
+        avg_bw=gred_out['avg_bw'],
+        avg_crb=gred_out['avg_crb'],
+        avg_link=gred_out['avg_link'],
+        avg_node=gred_out['avg_node'],
+        avg_path=gred_out['avg_path'],
+        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'],
+        total_nodes=gred_out['total_nodes'],
+        total_links=gred_out['total_links']
     )
     
 
@@ -259,7 +287,7 @@ def addToExcel():
 
 def main(substrate, vne):
     tot=0
-    ls = [200, 400, 600, 800, 1000]
+    ls = [10]
     for req_no in ls:
         tot += 1
         print(f"\n\treq_no: {req_no}\n")
@@ -269,7 +297,7 @@ def main(substrate, vne):
         #     iteration = int(input("Enter how many times to repeat (int only) : "))
         # except:
         #     iteration = 1
-        iteration = 10
+        iteration = 3
         iteration = max(iteration, 1)
         cnt=0
         while cnt<iteration:
@@ -280,12 +308,13 @@ def main(substrate, vne):
             # Uncomment those functions which to run, comment all other. for ex if want to run greedy algorithm only leave
             # exec_greedy() uncommented and comment all other (exec_vikor(), exec_topsis(), exec_parser(), exec_vrmap(), exec_rethinking())
             
-            exec_greedy(tot)        #Runs GREEDY algorithm
-            exec_vikor(tot)         #Runs VIKOR algorithm
+            # exec_greedy(tot)        #Runs GREEDY algorithm
+            # exec_vikor(tot)         #Runs VIKOR algorithm
             # exec_topsis(tot)        #Runs TOPSIS algorithm
-            exec_parser(tot)        #Runs PARSER algorithm
+            exec_EAA(tot)           #Runs EAA algorithm
+            # exec_parser(tot)        #Runs PARSER algorithm
             # exec_vrmap(tot)         #Runs VRMAP algorithm
-            exec_rethinking(tot)    #Runs RETHINKING algorithm
+            # exec_rethinking(tot)    #Runs RETHINKING algorithm
             
             if((cnt+1)%2==0):
                 print(f'\n\tFor REQUEST {req_no} ITERATION {cnt+1} COMPLETED\n\n')
@@ -323,6 +352,15 @@ def runRandomExtraction(pickle_name):
     print("\nRandom Extraction\n")
     main(substrate, vne)
 
+def runNormalExtraction(pickle_name):
+    substrate = extractSubstrate(str(pickle_name))
+    printToExcel()
+    for _ in range(3):
+        printToExcel(pre_resource='NORMAL')
+    printToExcel()
+    print("\nNormal Extraction\n")
+    main(substrate, vne_n)
+
 def runUniformExtraction(pickle_name):
     substrate = extractSubstrate(str(pickle_name))
     printToExcel()
@@ -344,17 +382,19 @@ def runPoissionExtraction(pickle_name):
 
 if __name__ == "__main__":
 
-    file_exists = os.path.exists('1_random') or os.path.exists('1_uniform') or os.path.exists('1_poission')
+    file_exists = os.path.exists('1_random.pickle') or os.path.exists('1_uniform.pickle') or os.path.exists('1_poission.pickle') or os.path.exists('1_normal.pickle')
     print(file_exists)
     # file_exists = False       #Manually set, if want to update a substrate pickle
     if(file_exists==False):
         # getSubstrates(graph_extraction.for_automate, str(1)+'_random.pickle')        #Random Distribution
-        generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform.pickle')    #Uniform Distribution
-        generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission.pickle')    #Poission Distribution
+        generateSubstrate(graph_extraction_normal.for_automate, str(1)+'_normal.pickle')    #Normal Distribution
+        # generateSubstrate(graph_extraction_uniform.for_automate, str(1)+'_uniform.pickle')    #Uniform Distribution
+        # generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission.pickle')    #Poission Distribution
 
     # runRandomExtraction('1_uniform.pickle')
-    runUniformExtraction('1_uniform.pickle')
-    runPoissionExtraction('1_poission.pickle')
+    # runUniformExtraction('1_uniform.pickle')
+    # runPoissionExtraction('1_poission.pickle')
+    runNormalExtraction('1_normal.pickle')
     
     excel = pd.DataFrame(output_dict)
     excel.to_excel("result.xlsx")
