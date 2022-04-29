@@ -201,7 +201,7 @@ def find_utilized_resources(original_sn_crb, original_sn_bw, sn_crb, sn_link_bw)
       edge_cost += original_sn_bw[edge]-sn_link_bw[edge]
     pre_edge_cost += original_sn_bw[edge]
     post_edge_cost += sn_link_bw[edge]
-  return utilized_nodes_cnt, utilized_links_cnt, node_cost, edge_cost, pre_edge_cost, post_edge_cost, pre_node_cost, post_node_cost
+  return utilized_nodes_cnt, utilized_links_cnt, node_cost, edge_cost, pre_edge_cost//2, post_edge_cost//2, pre_node_cost, post_node_cost
 
 def findAvgPathLength(vnr):
     cnt=0
