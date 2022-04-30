@@ -263,8 +263,8 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
   start_time = datetime.now().time()
   # sn_btw_cnt = BetweennessCentrality(sn).betweenness_centrality()
   # sn_eigned_vct = EigenvectorCentrality(sn).eigenvector_centrality()
-  sn_btw_cnt = nx.betweenness_centrality(nx.DiGraph(sn))      #ADDED - inbuilt function for betweeness centrality
-  sn_eigned_vct = nx.eigenvector_centrality(nx.DiGraph(sn))   #ADDED - inbuilt function for eigenvector centrality
+  sn_btw_cnt = nx.betweenness_centrality(nx.DiGraph(sn), max_iter = 10000)      #ADDED - inbuilt function for betweeness centrality
+  sn_eigned_vct = nx.eigenvector_centrality(nx.DiGraph(sn), max_iter = 10000)   #ADDED - inbuilt function for eigenvector centrality
   sorted_vne_req = sort_vne_revenue(vneRequests, original_vne_list)
   count = 0
   revenue = 0
@@ -310,8 +310,8 @@ def node_link_mapping(sn, vneRequests, original_substrate, original_vne_list):
     log.info(f'\tedges with weights {vne_bwdth}')
     # btw_cnt = BetweennessCentrality(_vnode[0]).betweenness_centrality()
     # eigned_vct = EigenvectorCentrality(_vnode[0]).eigenvector_centrality()
-    btw_cnt = nx.betweenness_centrality(nx.DiGraph(_vnode[0]))
-    eigned_vct = nx.eigenvector_centrality(nx.DiGraph(_vnode[0]))
+    btw_cnt = nx.betweenness_centrality(nx.DiGraph(_vnode[0]), max_iter = 1000)
+    eigned_vct = nx.eigenvector_centrality(nx.DiGraph(_vnode[0]), max_iter = 1000)
 
     # print(f"\n\nComputing for VNR {count}\n")
     log.info(f"Computing for VNR {count}")
