@@ -180,7 +180,8 @@ def main():
         if substrate.node_weights[node] != copy_sub.node_weights[node]:
             utilized_nodes += 1
     
-    avg_path_length /= accepted
+    if(accepted!=0):
+        avg_path_length /= accepted
     post_resource = post_resource_edgecost + post_resource_nodecost
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
