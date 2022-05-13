@@ -79,207 +79,6 @@ def exec_algorithm(algorithm_name, algorithm, tot=1):
         total_links=algorithm['total_links']
     )
 
-
-def exec_greedy(tot=1):
-    gred_out = greedy()
-    sleep(tot*1)
-    
-    printToExcel(
-        algorithm='GREEDY',
-        revenue=gred_out['revenue'],
-        total_cost=gred_out['total_cost'],
-        revenuetocostratio=(gred_out['revenue']/gred_out['total_cost'])*100,
-        accepted=gred_out['accepted'],
-        total_request=gred_out['total_request'],
-        embeddingratio=(gred_out['accepted']/gred_out['total_request'])*100,
-        pre_resource=gred_out['pre_resource'],
-        post_resource=gred_out['post_resource'],
-        consumed=gred_out['pre_resource']-gred_out['post_resource'],
-        avg_bw=gred_out['avg_bw'],
-        avg_crb=gred_out['avg_crb'],
-        avg_link=gred_out['avg_link'],
-        avg_node=gred_out['avg_node'],
-        avg_path=gred_out['avg_path'],
-        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'],
-        total_nodes=gred_out['total_nodes'],
-        total_links=gred_out['total_links']
-    )
-
-
-def exec_vikor(tot=1):
-    vikor_out = vikor()
-    sleep(tot*1)
-    printToExcel(
-        algorithm='VIKOR',
-        revenue=vikor_out['revenue'],
-        total_cost=vikor_out['total_cost'],
-        revenuetocostratio=(vikor_out['revenue']/vikor_out['total_cost'])*100,
-        accepted=vikor_out['accepted'],
-        total_request=vikor_out['total_request'],
-        embeddingratio=(vikor_out['accepted']/vikor_out['total_request'])*100,
-        pre_resource=vikor_out['pre_resource'],
-        post_resource=vikor_out['post_resource'],
-        consumed=vikor_out['pre_resource']-vikor_out['post_resource'],
-        avg_bw=vikor_out['avg_bw'],
-        avg_crb=vikor_out['avg_crb'],
-        avg_link=vikor_out['avg_link'],
-        avg_node=vikor_out['avg_node'],
-        avg_path=vikor_out['avg_path'],
-        avg_exec=vikor_out['avg_exec'].total_seconds()*1000/vikor_out['total_request'],
-        total_nodes=vikor_out['total_nodes'],
-        total_links=vikor_out['total_links']
-    )
-
-
-def exec_topsis(tot=1):
-    topsis_out = topsis()
-    sleep(tot*1)
-    
-    printToExcel(
-        algorithm='TOPSIS',
-        revenue=topsis_out['revenue'],
-        total_cost=topsis_out['total_cost'],
-        revenuetocostratio=(topsis_out['revenue']/topsis_out['total_cost'])*100,
-        accepted=topsis_out['accepted'],
-        total_request=topsis_out['total_request'],
-        embeddingratio=(topsis_out['accepted']/topsis_out['total_request'])*100,
-        pre_resource=topsis_out['pre_resource'],
-        post_resource=topsis_out['post_resource'],
-        consumed=topsis_out['pre_resource']-topsis_out['post_resource'],
-        avg_bw=topsis_out['avg_bw'],
-        avg_crb=topsis_out['avg_crb'],
-        avg_link=topsis_out['avg_link'],
-        avg_node=topsis_out['avg_node'],
-        avg_path=topsis_out['avg_path'],
-        avg_exec=topsis_out['avg_exec'].total_seconds()*1000/topsis_out['total_request'],
-        total_nodes=topsis_out['total_nodes'],
-        total_links=topsis_out['total_links']
-    )
-
-def exec_EAA(tot=1):
-    gred_out = EAA()
-    sleep(tot*1)
-    
-    printToExcel(
-        algorithm='EAA',
-        revenue=gred_out['revenue'],
-        total_cost=gred_out['total_cost'],
-        revenuetocostratio=(gred_out['revenue']/gred_out['total_cost'])*100,
-        accepted=gred_out['accepted'],
-        total_request=gred_out['total_request'],
-        embeddingratio=(gred_out['accepted']/gred_out['total_request'])*100,
-        pre_resource=gred_out['pre_resource'],
-        post_resource=gred_out['post_resource'],
-        consumed=gred_out['pre_resource']-gred_out['post_resource'],
-        avg_bw=gred_out['avg_bw'],
-        avg_crb=gred_out['avg_crb'],
-        avg_link=gred_out['avg_link'],
-        avg_node=gred_out['avg_node'],
-        avg_path=gred_out['avg_path'],
-        avg_exec=gred_out['avg_exec'].total_seconds()*1000/gred_out['total_request'],
-        total_nodes=gred_out['total_nodes'],
-        total_links=gred_out['total_links']
-    )
-    
-
-def exec_parser(tot=2):
-    parser_out = parser()
-    sleep(tot*2)
-    
-    printToExcel(
-        algorithm='PAGERANK-STABLE',
-        revenue=parser_out[0]['revenue'],
-        total_cost=parser_out[0]['total_cost'],
-        revenuetocostratio=(parser_out[0]['revenue']/parser_out[0]['total_cost'])*100,
-        accepted=parser_out[0]['accepted'],
-        total_request=parser_out[0]['total_request'],
-        embeddingratio=(parser_out[0]['accepted']/parser_out[0]['total_request'])*100,
-        pre_resource=parser_out[0]['pre_resource'],
-        post_resource=parser_out[0]['post_resource'],
-        consumed=parser_out[0]['pre_resource']-parser_out[0]['post_resource'],
-        avg_bw=parser_out[0]['avg_bw'],
-        avg_crb=parser_out[0]['avg_crb'],
-        avg_link=parser_out[0]['avg_link'],
-        avg_node=parser_out[0]['avg_node'],
-        avg_path=parser_out[0]['avg_path'],
-        avg_exec=parser_out[0]['avg_exec'].total_seconds()*1000/parser_out[0]['total_request'],
-        total_nodes=parser_out[0]['total_nodes'],
-        total_links=parser_out[0]['total_links']
-    )
-    
-    printToExcel(
-        algorithm='PAGERANK-DIRECT',
-        revenue=parser_out[1]['revenue'],
-        total_cost=parser_out[1]['total_cost'],
-        revenuetocostratio=(parser_out[1]['revenue']/parser_out[1]['total_cost'])*100,
-        accepted=parser_out[1]['accepted'],
-        total_request=parser_out[1]['total_request'],
-        embeddingratio=(parser_out[1]['accepted']/parser_out[1]['total_request'])*100,
-        pre_resource=parser_out[1]['pre_resource'],
-        post_resource=parser_out[1]['post_resource'],
-        consumed=parser_out[1]['pre_resource']-parser_out[1]['post_resource'],
-        avg_bw=parser_out[1]['avg_bw'],
-        avg_crb=parser_out[1]['avg_crb'],
-        avg_link=parser_out[1]['avg_link'],
-        avg_node=parser_out[1]['avg_node'],
-        avg_path=parser_out[1]['avg_path'],
-        avg_exec=parser_out[1]['avg_exec'].total_seconds()*1000/parser_out[1]['total_request'],
-        total_nodes=parser_out[1]['total_nodes'],
-        total_links=parser_out[1]['total_links']
-    )
-
-
-def exec_vrmap(tot=7):
-    vrmap_out = vrmap()
-    sleep(tot*5)
-    printToExcel(
-        algorithm='VRMAP',
-        revenue=vrmap_out['revenue'],
-        total_cost=vrmap_out['total_cost'],
-        revenuetocostratio=(vrmap_out['revenue']/vrmap_out['total_cost'])*100,
-        accepted=vrmap_out['accepted'],
-        total_request=vrmap_out['total_request'],
-        embeddingratio=(vrmap_out['accepted']/vrmap_out['total_request'])*100,
-        pre_resource=vrmap_out['pre_resource'],
-        post_resource=vrmap_out['post_resource'],
-        consumed=vrmap_out['pre_resource']-vrmap_out['post_resource'],
-        avg_bw=vrmap_out['avg_bw'],
-        avg_crb=vrmap_out['avg_crb'],
-        avg_link=vrmap_out['avg_link'],
-        avg_node=vrmap_out['avg_node'],
-        avg_path=vrmap_out['avg_path'],
-        avg_exec=vrmap_out['avg_exec'].total_seconds()*1000/vrmap_out['total_request'],
-        total_nodes=vrmap_out['total_nodes'],
-        total_links=vrmap_out['total_links']
-    )
-
-
-def exec_rethinking(tot=15):
-    rethinking_out = rethinking()
-    sleep(tot*4)
-
-    printToExcel(
-        algorithm='RETHINKING',
-        revenue=rethinking_out['revenue'],
-        total_cost=rethinking_out['total_cost'],
-        revenuetocostratio=(rethinking_out['revenue']/rethinking_out['total_cost'])*100,
-        accepted=rethinking_out['accepted'],
-        total_request=rethinking_out['total_request'],
-        embeddingratio=(rethinking_out['accepted']/rethinking_out['total_request'])*100,
-        pre_resource=rethinking_out['pre_resource'],
-        post_resource=rethinking_out['post_resource'],
-        consumed=rethinking_out['pre_resource']-rethinking_out['post_resource'],
-        avg_bw=rethinking_out['avg_bw'],
-        avg_crb=rethinking_out['avg_crb'],
-        avg_link=rethinking_out['avg_link'],
-        avg_node=rethinking_out['avg_node'],
-        avg_path=rethinking_out['avg_path'],
-        avg_exec=rethinking_out['avg_exec'].total_seconds()*1000/rethinking_out['total_request'],
-        total_nodes=rethinking_out['total_nodes'],
-        total_links=rethinking_out['total_links']
-    )
-
-
 def printToExcel(algorithm='', revenue='', total_cost='', revenuetocostratio='', accepted='', total_request='', 
 embeddingratio='', pre_resource='', post_resource='',consumed='',avg_bw='',avg_crb='',avg_link='',
 avg_node='',avg_path='',avg_exec='', total_nodes='', total_links=''):
@@ -318,6 +117,7 @@ def main(substrate, vne):
         print(f"\n\treq_no: {req_no}\n")
         # setup_logger('log1','vikor.log')
         # setup_logger('log2','greedy.log')
+        
         # try:
         #     iteration = int(input("Enter how many times to repeat (int only) : "))
         # except:
@@ -337,9 +137,9 @@ def main(substrate, vne):
             exec_algorithm('VIKOR', vikor(), tot*1)         #Runs VIKOR algorithm
             exec_algorithm('TOPSIS', topsis(), tot*1)        #Runs TOPSIS algorithm
             exec_algorithm('EAA', EAA(), tot*1)           #Runs EAA algorithm
-            parser_out = parser()
-            exec_algorithm('PAGERANK-STABLE', parser_out[0], tot*2)        #Runs PARSER-STABLE algorithm
-            exec_algorithm('PAGERANK-DIRECT', parser_out[1], tot*2)        #Runs PARSER-DIRECT algorithm
+            parser_out = parser()                         #Runs Parser algorithm
+            exec_algorithm('PAGERANK-STABLE', parser_out[0], tot*2)        
+            exec_algorithm('PAGERANK-DIRECT', parser_out[1], tot*2)        
             exec_algorithm('VRMAP', vrmap(), tot*5)         #Runs VRMAP algorithm
             exec_algorithm('RETHINKING', rethinking(), tot*7)    #Runs RETHINKING algorithm
             
@@ -386,42 +186,6 @@ def runExtraction(pickle_name, pre_resource_name, vnr):
         print('\nPoission Extraction\n')
     main(substrate, vnr)    
 
-def runRandomExtraction(pickle_name):
-    substrate = extractSubstrate(str(pickle_name))
-    printToExcel()
-    for _ in range(3):
-        printToExcel(pre_resource='RANDOM')
-    printToExcel()
-    print("\nRandom Extraction\n")
-    main(substrate, vne)
-
-def runNormalExtraction(pickle_name):
-    substrate = extractSubstrate(str(pickle_name))
-    printToExcel()
-    for _ in range(3):
-        printToExcel(pre_resource='NORMAL')
-    printToExcel()
-    print("\nNormal Extraction\n")
-    main(substrate, vne_n)
-
-def runUniformExtraction(pickle_name):
-    substrate = extractSubstrate(str(pickle_name))
-    printToExcel()
-    for _ in range(3):
-        printToExcel(pre_resource='UNIFORM')
-    printToExcel()
-    print("\nUNIFORM Extraction\n")    
-    main(substrate, vne_u)
-
-def runPoissionExtraction(pickle_name):
-    substrate = extractSubstrate(str(pickle_name))
-    printToExcel()
-    for _ in range(3):
-        printToExcel(pre_resource='POISSION')
-    printToExcel()
-    print("\nPOISSON Extraction\n")
-    main(substrate, vne_p)
-
 
 if __name__ == "__main__":
 
@@ -435,14 +199,9 @@ if __name__ == "__main__":
         generateSubstrate(graph_extraction_poisson.for_automate, str(1)+'_poission.pickle')    #Poission Distribution
 
     runExtraction('1_random.pickle', 'RANDOM', vne)
-    # runExtraction('1_normal.pickle', 'NORMAL', vne_n)
-    # runExtraction('1_uniform.pickle', 'UNIFORM', vne_u)
-    # runExtraction('1_poission.pickle', 'POISSION', vne_p)
-
-    # runRandomExtraction('1_uniform.pickle')
-    # runUniformExtraction('1_uniform.pickle')
-    # runPoissionExtraction('1_poission.pickle')
-    # runNormalExtraction('1_normal.pickle')
+    runExtraction('1_normal.pickle', 'NORMAL', vne_n)
+    runExtraction('1_uniform.pickle', 'UNIFORM', vne_u)
+    runExtraction('1_poission.pickle', 'POISSION', vne_p)
     
     excel = pd.DataFrame(output_dict)
     excel.to_excel("result.xlsx")
