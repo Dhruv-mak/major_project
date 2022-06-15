@@ -56,7 +56,7 @@ def get_ranks(graph):
     for i in range(graph.nodes):
         nrm[i] = 2*(graph.node_weights[i]) * strength[i]
     ranks = sorted(  # array containing weights
-        [i for i in range(graph.nodes)], key=lambda x: nrm[x]
+        [i for i in range(graph.nodes)], key=lambda x: nrm[x], reverse=True
     )
     return ranks
 
