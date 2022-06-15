@@ -3,7 +3,6 @@ import math
 import numpy as np
 import pandas as pd
 import helper
-import logging
 np.seterr(divide='ignore', invalid='ignore')    #ignores the division by zero (OR value tending to zero)
 
 def divide(a, b):
@@ -39,8 +38,7 @@ def compute_katz(graph):
     # centrality = nx.katz_centrality(G,1/phi-0.01, max_iter=sys.maxsize, tol=1.0e-6)
     centrality = nx.katz_centrality(G)  #Time complexity - O(V^2)*max_iteration => O(V^2)
     centrality = np.array([centrality[i] for i in range(graph.nodes)])
-    # print(f"\n centrality : \t{centrality}")
-    logging.info(f"\n centrality : \t{centrality}")
+    #print(centrality)
     return centrality
 
 
@@ -87,5 +85,3 @@ if __name__ == "__main__":
     for edge in substrate.edges:
         G.add_edge(int(edge[0]), int(edge[1]), weight=substrate.edge_weights[edge])
     phi = (1 + math.sqrt(substrate.nodes + 1)) / 2.0  # largest eigenvalue of adj matrix
-    
-    print(f"\n Katz Centrality : \t{(nx.katz_centrality(G, max_iter=1000, tol=1.0e-6))}\n")
