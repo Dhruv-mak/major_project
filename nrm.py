@@ -1,9 +1,12 @@
-from topsis_helper import get_ranks
+from nrm_helper import get_ranks
 import helper
 import sys
 import copy
 from datetime import datetime, date
 import logging
+
+# global log1
+# log1 = logging.getLogger('log1')
 
 class temp_map:
     def __init__(self, vne_list,req_no, map=[]) -> None:
@@ -17,9 +20,7 @@ class temp_map:
 def node_map(substrate, virtual, req_no):
     map = [0 for x in range(virtual.nodes)]
     sorder = get_ranks(substrate) # ascending order
-    logging.info(f"\t\tRanks for substrate {sorder}")
     vorder = get_ranks(virtual) 
-    logging.info(f"\t\tRanks for vne {vorder}")
     assigned_nodes = set()
     for vnode in vorder:
         for snode in sorder:
@@ -80,7 +81,7 @@ def edge_map(substrate, virtual, req_no, req_map, vne_list):
 def main():
     substrate, vne_list = helper.read_pickle()
     copy_sub = copy.deepcopy(substrate)
-    logging.basicConfig(filename="topsis.log",filemode="w", level=logging.INFO)
+    logging.basicConfig(filename="nrm.log",filemode="w", level=logging.INFO)
 
     logging.info(f"\n\n\t\t\t\t\t\tSUBSTRATE NETWORK (BEFORE MAPPING VNRs)")
     logging.info(f"\t\tTotal number of nodes and edges in substrate network is : {substrate.nodes} and {len(substrate.edges)} ")
@@ -191,6 +192,7 @@ def main():
         logging.error(f"\t\tCouldn't embedd any request")
         return
 
+    logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
     logging.info(f"\t\tThe revenue to cost ratio is {(revenue/tot_cost)*100:.4f}%")
     logging.info(f"\t\tTotal number of requests embedded is {accepted} out of {len(vne_list)}")
     logging.info(f"\t\tEmbedding ratio is {(accepted/len(vne_list))*100:.4f}%\n")
@@ -208,11 +210,10 @@ def main():
     # logging.shutdown()
 
 
-
 if __name__ == '__main__':
     '''
     The output can be different for same input file also.
     Because there can be multiple shortest paths from source to destination.
     '''
-    # helper.setup_logger('log1','topsis.log')
+    # helper.setup_logger('log1','nrm.log')
     main()
