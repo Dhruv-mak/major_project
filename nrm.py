@@ -159,13 +159,13 @@ def main():
         #print(f"Mapping for request {req_no} is done successfully!! {req_map.node_map} with total cost {req_map.total_cost}")
         logging.info(f"\t\tMapping for request {req_no} is done successfully!! {req_map.node_map} with revenue {sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2} and total cost {req_map.total_cost}\n")
         curr_map[req_no] = req_map
-        revenue += sum(vne_list[req_no].node_weights.values()) + sum(vne_list[req_no].edge_weights.values())//2
+        revenue += 2*(sum(vne_list[req_no].node_weights.values())) + sum(vne_list[req_no].edge_weights.values())//2
 
     ed_cost  = 0
     no_cost = 0
     for request in curr_map.values():
         ed_cost += request.edge_cost # total bandwidth for all the mapped requests
-        no_cost += request.node_cost # total crb for all the mapped requests
+        no_cost += 2*(request.node_cost) # total crb for all the mapped requests
     tot_cost = ed_cost + no_cost
 
     post_resource_edgecost =0
