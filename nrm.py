@@ -90,7 +90,7 @@ def findAvgPathLength(vnr):
     return cnt
 
 def main():
-    print(f"\t\t{datetime.now().time()}\tVikor Started")
+    print(f"\t\t{datetime.now().time()}\tNRM Started")
     # substrate, vne_list = helper.read_pickle()
     substrate, vne_list = copy.deepcopy(config.substrate), copy.deepcopy(config.vne_list)
     copy_sub = copy.deepcopy(substrate)
@@ -227,7 +227,7 @@ def main():
             "total_nodes": total_vnr_nodes,
             "total_links": total_vnr_links,
         }
-        print(f"\t\t{datetime.now().time()}\tVikor completed\n")
+        print(f"\t\t{datetime.now().time()}\tNRM completed\n")
         return output_dict
 
     logging.info(f"\t\tThe revenue is {revenue} and total cost is {tot_cost}")
@@ -262,7 +262,7 @@ def main():
         "total_nodes": total_vnr_nodes,
         "total_links": total_vnr_links,
     }
-    print(f"\t\t{datetime.now().time()}\tVikor completed\n")
+    print(f"\t\t{datetime.now().time()}\tNRM completed\n")
     return output_dict
 
 

@@ -9,6 +9,7 @@ from vrmap import main as vrmap
 from rethinking import main as rethinking
 from topsis import main as topsis
 from node_link_mapping import main as EAA
+from nrm import main as NRM
 from vne import create_vne as vne
 from vne_u import create_vne as vne_u
 from vne_p import create_vne as vne_p
@@ -135,13 +136,15 @@ def main(substrate, vne):
             
             exec_algorithm('GREEDY', greedy(), tot*1)        #Runs GREEDY algorithm
             exec_algorithm('VIKOR', vikor(), tot*1)         #Runs VIKOR algorithm
-            exec_algorithm('TOPSIS', topsis(), tot*1)        #Runs TOPSIS algorithm
-            exec_algorithm('EAA', EAA(), tot*1)           #Runs EAA algorithm
+            # exec_algorithm('TOPSIS', topsis(), tot*1)        #Runs TOPSIS algorithm
+            # exec_algorithm('EAA', EAA(), tot*1)           #Runs EAA algorithm
             parser_out = parser()                         #Runs Parser algorithm
-            exec_algorithm('PAGERANK-STABLE', parser_out[0], tot*2)        
-            exec_algorithm('PAGERANK-DIRECT', parser_out[1], tot*2)        
-            exec_algorithm('VRMAP', vrmap(), tot*5)         #Runs VRMAP algorithm
-            exec_algorithm('RETHINKING', rethinking(), tot*7)    #Runs RETHINKING algorithm
+            # exec_algorithm('PAGERANK-STABLE', parser_out[0], tot*2)        
+            # exec_algorithm('PAGERANK-DIRECT', parser_out[1], tot*2)        
+            # exec_algorithm('VRMAP', vrmap(), tot*5)         #Runs VRMAP algorithm
+            # exec_algorithm('RETHINKING', rethinking(), tot*7)    #Runs RETHINKING algorithm
+            exec_algorithm('NRM', NRM(), tot*1)
+
             
             if((cnt+1)%2==0):
                 print(f'\n\tFor REQUEST {req_no} ITERATION {cnt+1} COMPLETED\n\n')
