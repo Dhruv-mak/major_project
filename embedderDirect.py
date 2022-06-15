@@ -553,7 +553,8 @@ def embed_rank_mapping(start_time, sn, snLoc, snLinkBandWidth, snCRB, vneList,
     no_cost = pre_sub_nodecost-post_sub_nodecost
     ed_cost = pre_sub_edgecost-post_sub_edgecost
 
-    avg_path_length /= (total_vne-failed_vne)
+    if((total_vne-failed_vne) != 0):
+        avg_path_length /= (total_vne-failed_vne)
     end_time = datetime.now().time()
     duration = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)    
     
